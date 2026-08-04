@@ -34,7 +34,7 @@ jobs:
 
       - name: Configure Morphe package credentials
         env:
-          GPR_KEY: ${{ secrets.MORPHE_PACKAGES_TOKEN }}
+          GPR_KEY: ${{ secrets.MORPHE_PACKAGES_TOKEN || github.token }}
         run: |
           mkdir -p "$HOME/.gradle"
           printf 'gpr.user=%s\ngpr.key=%s\n' "$GITHUB_ACTOR" "$GPR_KEY" > "$HOME/.gradle/gradle.properties"
