@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -27,10 +28,8 @@ public final class MorpheSettingsRuntime {
     }
 
     /** Intercepts a click only for the hidden slot repurposed as Morphe. */
-    public static boolean openIfMorphe(Object category) {
-        if (!(category instanceof Enum) || !"EXPERIENCE".equals(((Enum<?>) category).name())) {
-            return false;
-        }
+    public static boolean openIfMorphe(Object clickedSection) {
+        if (!containsExperienceCategory(clickedSection)) return false;
         Application application = currentApplication();
         if (application == null) return false;
         initialize(application);
@@ -40,6 +39,35 @@ public final class MorpheSettingsRuntime {
             application.startActivity(intent);
         }
         return true;
+    }
+
+    /**
+     * The Nuvio click lambda receives its minified SettingsSectionSpec wrapper, not the
+     * SettingsCategory enum directly. Resolve it structurally because R8 renames both the
+     * wrapper and its fields. The destination field is also an enum, so match the value.
+     */
+    private static boolean containsExperienceCategory(Object value) {
+        if (value == null) return false;
+        if (value instanceof Enum) {
+            return "EXPERIENCE".equals(((Enum<?>) value).name());
+        }
+        for (Class<?> type = value.getClass(); type != null && type != Object.class;
+             type = type.getSuperclass()) {
+            for (Field field : type.getDeclaredFields()) {
+                if (!field.getType().isEnum()) continue;
+                try {
+                    field.setAccessible(true);
+                    Object candidate = field.get(value);
+                    if (candidate instanceof Enum
+                            && "EXPERIENCE".equals(((Enum<?>) candidate).name())) {
+                        return true;
+                    }
+                } catch (Throwable ignored) {
+                    // Keep inspecting the remaining enum fields.
+                }
+            }
+        }
+        return false;
     }
 
     public static void initialize(Context context) {

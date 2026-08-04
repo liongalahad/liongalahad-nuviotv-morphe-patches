@@ -25,13 +25,13 @@ internal object SettingsScreenFingerprint : Fingerprint(
     )
 )
 
-/** Generated section-click lambda, matched by state-selection behavior. */
+/** Generated Classic/TV rail section-click lambda, matched by state-selection behavior. */
 internal object SettingsCategoryClickFingerprint : Fingerprint(
     returnType = "Ljava/lang/Object;",
     parameters = listOf("Ljava/lang/Object;"),
     filters = listOf(
-        string("category"),
-        methodCall(name = "getValue", returnType = "Ljava/lang/Object;"),
+        string("section"),
+        methodCall(name = "ordinal", returnType = "I"),
         methodCall(name = "setValue", returnType = "V")
     )
 )
