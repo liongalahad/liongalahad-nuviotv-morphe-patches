@@ -1,3 +1,9 @@
+## [1.0.0-dev.2](https://github.com/liongalahad/nuviotv-patches/compare/v1.0.0-dev.1...v1.0.0-dev.2) (2026-08-04)
+
+### 🐛 Bug Fixes
+
+* select runtime patch bundle in CI ([b9c2ec2](https://github.com/liongalahad/nuviotv-patches/commit/b9c2ec2cc7df865f990e38ef2e349bec55b61ee8))
+
 ## 1.0.0-dev.1 (2026-08-04)
 
 ### ✨ New Features
