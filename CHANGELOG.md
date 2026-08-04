@@ -1,3 +1,9 @@
+## [1.0.0-dev.6](https://github.com/liongalahad/nuviotv-patches/compare/v1.0.0-dev.5...v1.0.0-dev.6) (2026-08-04)
+
+### 🐛 Bug Fixes
+
+* make local Morphe builds reproducible ([5adc26d](https://github.com/liongalahad/nuviotv-patches/commit/5adc26dc6b6b62afbd4e44bbbdcf6501d46675e4))
+
 ## [1.0.0-dev.5](https://github.com/liongalahad/nuviotv-patches/compare/v1.0.0-dev.4...v1.0.0-dev.5) (2026-08-04)
 
 ### 🐛 Bug Fixes
