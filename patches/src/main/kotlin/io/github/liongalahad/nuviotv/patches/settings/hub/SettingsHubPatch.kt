@@ -4,8 +4,6 @@ import app.morphe.patcher.patch.resourcePatch
 import io.github.liongalahad.nuviotv.patches.shared.Constants.NUVIO_COMPATIBILITY
 import org.w3c.dom.Element
 
-private const val ACTIVITY_CLASS =
-    "io.github.liongalahad.nuviotv.extension.settings.MorpheSettingsActivity"
 private const val PROVIDER_CLASS =
     "io.github.liongalahad.nuviotv.extension.settings.MorpheInitProvider"
 private const val CATEGORY_METADATA =
@@ -18,17 +16,6 @@ internal val settingsHubPatch = resourcePatch {
     execute {
         document("AndroidManifest.xml").use { document ->
             val application = document.getElementsByTagName("application").item(0) as Element
-            val activities = document.getElementsByTagName("activity")
-            val activityExists = (0 until activities.length).any {
-                (activities.item(it) as? Element)?.getAttribute("android:name") == ACTIVITY_CLASS
-            }
-            if (!activityExists) {
-                application.appendChild(document.createElement("activity").apply {
-                    setAttribute("android:name", ACTIVITY_CLASS)
-                    setAttribute("android:exported", "false")
-                    setAttribute("android:theme", "@android:style/Theme.Material.NoActionBar")
-                })
-            }
             val providers = document.getElementsByTagName("provider")
             val providerExists = (0 until providers.length).any {
                 (providers.item(it) as? Element)?.getAttribute("android:name") == PROVIDER_CLASS
@@ -53,7 +40,19 @@ internal val settingsHubPatch = resourcePatch {
                 val element = strings.item(index) as? Element ?: continue
                 when (element.getAttribute("name")) {
                     "settings_experience" -> element.textContent = "Morphe"
-                    "settings_experience_subtitle" -> element.textContent = "Configure installed patches"
+                    "settings_experience_subtitle" -> element.textContent = "Subtitle patch settings"
+                    "experience_mode_group_title" -> element.textContent = "Subtitles"
+                    "experience_mode_switch_to_advanced",
+                    "experience_mode_switch_to_essential" ->
+                        element.textContent = "Subtitles"
+                    "experience_mode_switch_to_advanced_subtitle",
+                    "experience_mode_switch_to_essential_subtitle" ->
+                        element.textContent = "Configure subtitle patch settings"
+                    "experience_mode_confirm_advanced_title" ->
+                        element.textContent = "Remove SDH Annotations"
+                    "experience_mode_confirm_advanced_subtitle" ->
+                        element.textContent =
+                            "Remove sound descriptions, speaker labels, and other SDH text"
                 }
             }
         }

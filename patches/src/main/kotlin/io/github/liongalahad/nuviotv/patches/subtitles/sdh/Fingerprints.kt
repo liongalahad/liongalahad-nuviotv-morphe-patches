@@ -3,7 +3,7 @@ package io.github.liongalahad.nuviotv.patches.subtitles.sdh
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.literal
 import app.morphe.patcher.methodCall
-import app.morphe.patcher.string
+import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 
 private const val CUE_GROUP = "Landroidx/media3/common/text/CueGroup;"
 private const val TEXT_OUTPUT = "Landroidx/media3/exoplayer/text/TextOutput;"
@@ -25,15 +25,42 @@ internal object SettingsScreenFingerprint : Fingerprint(
     )
 )
 
-/** Generated Classic/TV rail section-click lambda, matched by state-selection behavior. */
-internal object SettingsCategoryClickFingerprint : Fingerprint(
-    returnType = "Ljava/lang/Object;",
-    parameters = listOf("Ljava/lang/Object;"),
+/** Essential-layout Experience pane header repurposed as the Morphe preview. */
+internal object ExperienceSettingsHeaderFingerprint : Fingerprint(
+    returnType = "V",
     filters = listOf(
-        string("section"),
-        methodCall(name = "ordinal", returnType = "I"),
-        methodCall(name = "setValue", returnType = "V")
+        literal(0x7f110894), // settings_advanced
+        literal(0x7f110550) // experience_mode_switch_to_advanced_header_subtitle
     )
+)
+
+/** Both Experience-mode cards rendered inside the native settings pane. */
+internal object ExperienceSettingsCardFingerprint : Fingerprint(
+    returnType = "Ljava/lang/Object;",
+    parameters = listOf("Ljava/lang/Object;", "Ljava/lang/Object;", "Ljava/lang/Object;"),
+    custom = { method, classDef ->
+        val requiredLiterals = setOf(
+            0x7f110544L, 0x7f11054cL, 0x7f11054fL,
+            0x7f110551L, 0x7f110552L, 0x7f110553L
+        )
+        val methodLiterals = method.implementation?.instructions
+            ?.mapNotNull { (it as? WideLiteralInstruction)?.wideLiteral }
+            ?.toSet()
+            .orEmpty()
+        "Lkotlin/jvm/functions/Function3;" in classDef.interfaces &&
+            methodLiterals.containsAll(requiredLiterals)
+    }
+)
+
+/** A native Nuvio boolean setting row used to discover the shared switch renderer. */
+internal object NativeSettingsSwitchUsageFingerprint : Fingerprint(
+    returnType = "Ljava/lang/Object;",
+    parameters = listOf("Ljava/lang/Object;", "Ljava/lang/Object;", "Ljava/lang/Object;"),
+    filters = listOf(
+        literal(0x7f1109a5), // sub_use_forced_subtitles
+        literal(0x7f1109a6) // sub_use_forced_subtitles_desc
+    ),
+    custom = { _, classDef -> "Lkotlin/jvm/functions/Function3;" in classDef.interfaces }
 )
 
 /** Nuvio's CueNormalizingTextOutput Media3 callback. */
