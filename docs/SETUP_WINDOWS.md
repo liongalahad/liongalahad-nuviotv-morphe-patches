@@ -14,13 +14,14 @@ The same key must be used for CLI and Manager test outputs. Back up `local/keyst
 
 ## GitHub credentials
 
-The active `liongalahad` credential needs `repo`, `workflow`, and `read:packages`. `read:packages` is required to resolve Morphe's Gradle plugin. Repository readers need a PAT that can read this private repository in Morphe Manager.
+The active `liongalahad` credential needs `repo`, `workflow`, and `read:packages`. `read:packages` is required to resolve Morphe's Gradle plugin. Morphe Manager does not need a PAT to read the public patch source.
 
 Configure the Actions secret `MORPHE_PACKAGES_TOKEN` with a PAT that can read Morphe's GitHub Packages registry. Never use this secret for APK downloads or publish it to logs.
 
 ## Emulators
 
-- `Pixel_10`: Manager/private-source/import/selection workflow.
-- `Television_4K`: API 36 x86_64 Nuvio runtime, D-pad, Media3, screenshots, UI dump, and logcat.
+- `Pixel_10`: Manager/public-source/import/selection workflow.
+- `Television_4K`: API 36 x86_64 Nuvio runtime, D-pad, Media3, screenshots, UI dump, and logcat. Both the x86_64 and official universal APKs are tested on this AVD.
 
 Real devices are not interchangeable with the AVD gate. `test.ps1 -Device real` detects `ro.product.cpu.abi` and selects only the declared arm64-v8a or armeabi-v7a official asset.
+Pass `-Asset universal` to explicitly validate the official universal APK on a compatible emulator or real device.

@@ -48,6 +48,7 @@ public final class Extension {
   "category": "$Category",
   "target": {"application":"NuvioTV","package":"com.nuvio.tv","versions":["0.8.1-beta"],"launchComponent":"com.nuvio.tv/.MainActivity"},
   "assets": {
+    "universal": {"url":"TODO","sha256":"TODO"},
     "x86_64": {"url":"TODO","sha256":"TODO"},
     "arm64-v8a": {"url":"TODO","sha256":"TODO"},
     "armeabi-v7a": {"url":"TODO","sha256":"TODO"}

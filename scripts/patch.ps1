@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][string]$Patch,
-    [ValidateSet('x86_64','arm64-v8a','armeabi-v7a')][string]$Abi = 'x86_64',
+    [ValidateSet('universal','x86_64','arm64-v8a','armeabi-v7a')][string]$Abi = 'x86_64',
     [string]$RunDirectory,
     [switch]$NoBuild
 )
@@ -12,7 +12,7 @@ $repo = Get-RepoRoot
 $manifest = Get-PatchManifest $Patch
 $asset = Get-Asset $manifest $Abi
 if (-not $NoBuild) { & "$PSScriptRoot\build.ps1" -Patch $Patch; if ($LASTEXITCODE -ne 0) { throw 'Build failed.' } }
-if (-not $RunDirectory) { $RunDirectory = New-PatchRunDirectory $Patch }
+if (-not $RunDirectory) { $RunDirectory = New-PatchRunDirectory $Patch $Abi }
 New-Item -ItemType Directory -Force $RunDirectory | Out-Null
 
 $cache = Join-Path $repo "local\cache\nuvio-$($manifest.target.versions[0])-$Abi.apk"

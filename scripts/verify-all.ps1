@@ -12,9 +12,11 @@ if (-not $manifests) { throw 'No patch compartments were found.' }
 if ($LASTEXITCODE -ne 0) { throw 'Combined bundle build failed.' }
 
 $results = foreach ($manifest in $manifests) {
-    $run = New-PatchRunDirectory $manifest.id
-    & "$PSScriptRoot\patch.ps1" -Patch $manifest.id -Abi x86_64 -RunDirectory $run -NoBuild
-    if ($LASTEXITCODE -ne 0) { throw "Isolated application failed for $($manifest.id)." }
-    [pscustomobject]@{ Patch = $manifest.id; Run = $run; Result = 'PASS' }
+    foreach ($asset in @('x86_64', 'universal')) {
+        $run = New-PatchRunDirectory $manifest.id $asset
+        & "$PSScriptRoot\patch.ps1" -Patch $manifest.id -Abi $asset -RunDirectory $run -NoBuild
+        if ($LASTEXITCODE -ne 0) { throw "Isolated $asset application failed for $($manifest.id)." }
+        [pscustomobject]@{ Patch = $manifest.id; Asset = $asset; Run = $run; Result = 'PASS' }
+    }
 }
 $results | Format-Table -AutoSize

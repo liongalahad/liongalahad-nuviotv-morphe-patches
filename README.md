@@ -1,14 +1,14 @@
 # NuvioTV Patches
 
-Private Morphe patch source for the official NuvioTV Android application. The first patch is `Remove SDH Annotations`, supported only for `com.nuvio.tv` `0.8.1-beta` on the Media3/ExoPlayer subtitle path.
+Public Morphe patch source for the official NuvioTV Android application. The first patch is `Remove SDH Annotations`, supported only for `com.nuvio.tv` `0.8.1-beta` on the Media3/ExoPlayer subtitle path.
 
 This repository distributes patch code and `.mpp` bundles. It never distributes original, patched, or modified NuvioTV APKs.
 
-## Install as a private source
+## Install in Morphe Manager
 
-1. Create a GitHub fine-grained PAT that can read this private repository. Do not commit or paste it into project files.
-2. In Morphe Manager on `Pixel_10`, add `liongalahad/nuviotv-patches` as a private patch source and provide the PAT when Manager requests it.
-3. Import the official NuvioTV `0.8.1-beta` APK for the target ABI.
+1. Add `liongalahad/nuviotv-patches` as a GitHub patch source. No GitHub PAT is required because the repository is public.
+2. Enable prerelease patches while the bundle remains on `dev`.
+3. Import the official NuvioTV `0.8.1-beta` APK for the target ABI, or the official universal APK.
 4. Select only `Remove SDH Annotations`. Use the dedicated local test signing identity for repeatable test upgrades.
 5. Install on the dedicated TV test profile. The official app cannot be upgraded in place because the patched APK has a different signature.
 
