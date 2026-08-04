@@ -48,7 +48,10 @@ jobs:
       - name: Isolated patch application and inspection
         shell: pwsh
         run: |
-          $bundle = (Get-ChildItem patches/build/libs/*.mpp | Select-Object -First 1).FullName
+          $bundle = (Get-ChildItem patches/build/libs/patches-*.mpp |
+            Where-Object Name -NotMatch '-(sources|javadoc)\.mpp$' |
+            Select-Object -First 1).FullName
+          if (-not $bundle) { throw 'Runtime patch bundle was not produced.' }
           # FULL SDK verification reports false positives for optional classes
           # already absent from Nuvio; STRIP_SAFE has a Morphe 1.12.0 rebuild bug.
           java -jar "$env:RUNNER_TEMP\morphe.jar" patch --patches $bundle --exclusive --enable 'Remove SDH Annotations' --unsigned --bytecode-mode STRIP_FAST --out "$env:RUNNER_TEMP\patched.apk" --result-file "$env:RUNNER_TEMP\result.json" "$env:RUNNER_TEMP\nuvio.apk"
