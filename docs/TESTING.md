@@ -26,4 +26,4 @@
 
 ## SDH sample assertions
 
-With the toggle OFF, use the exact source text. With it ON, verify sound/music/SDH blocks and speaker labels disappear while dialogue, ordinary parentheses, times, URLs, ratios, punctuation, cue timing/position, non-text cues, and spans survive. Repeat after seeking and changing subtitle tracks. Search logcat for crashes, ANRs, `VerifyError`, and fatal entries.
+With the toggle OFF, use the exact source text. With it ON, verify every supported complete square-bracket and parenthetical block disappears, along with recognized speaker labels and music descriptions. Verify that text outside those blocks, times, URLs, ratios, punctuation, cue timing/position, non-text cues, and surviving spans remain. Ordinary text inside supported brackets or parentheses is deliberately removed by FULL mode. Repeat after seeking and changing subtitle tracks. Search logcat for crashes, ANRs, `VerifyError`, and fatal entries.

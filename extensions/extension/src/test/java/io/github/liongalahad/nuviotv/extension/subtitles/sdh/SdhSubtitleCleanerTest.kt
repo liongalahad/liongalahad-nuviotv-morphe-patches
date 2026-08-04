@@ -45,6 +45,14 @@ class SdhSubtitleCleanerTest {
         assertEquals("Stay here.", cleaned("(in Italian) Stay here."))
     }
 
+    @Test fun `enabled mode removes every complete bracketed and parenthetical block`() {
+        assertEquals(
+            "Keep outside.",
+            cleaned("[literal spoken content] Keep (every important word) outside.")
+        )
+        assertEquals("Hello.", cleaned("[an unknown annotation!] (door closes) Hello."))
+    }
+
     @Test fun `speaker labels and qualifiers are removed`() {
         assertEquals("Where are you?", cleaned("JOHN: Where are you?"))
         assertEquals("Where are you?", cleaned("JOHN (ON PHONE): Where are you?"))
@@ -57,13 +65,23 @@ class SdhSubtitleCleanerTest {
         assertEquals("♪ Hello darkness, my old friend ♪", cleaned("♪ Hello darkness, my old friend ♪"))
     }
 
-    @Test fun `times urls ratios punctuation dialogue markers and ordinary parentheses survive`() {
+    @Test fun `mojibake music markers and multiline song descriptions are handled`() {
+        val corruptedNote = "\u00E2\u2122\u00AA"
+        assertNull(SdhSubtitleCleaner.clean("$corruptedNote atmospheric music $corruptedNote"))
+        assertNull(SdhSubtitleCleaner.clean("$corruptedNote$corruptedNote$corruptedNote"))
+        assertEquals(
+            "$corruptedNote Hello darkness, my old friend $corruptedNote",
+            cleaned("$corruptedNote Hello darkness, my old friend $corruptedNote")
+        )
+        assertNull(SdhSubtitleCleaner.clean("$corruptedNote Julee Cruise's\n\"Falling\" playing $corruptedNote"))
+    }
+
+    @Test fun `times urls ratios punctuation and dialogue markers survive`() {
         listOf(
             "The rule is: never look back.",
             "At 10:30, leave the house.",
             "Visit https://example.com now.",
             "Use 16:9.",
-            "I said (and I meant it) that I was leaving.",
             "- Ordinary dialogue."
         ).forEach { assertEquals(it, cleaned(it)) }
     }

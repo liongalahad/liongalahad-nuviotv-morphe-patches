@@ -3,38 +3,30 @@ package io.github.liongalahad.nuviotv.extension.subtitles.sdh
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 
-/** Conservative SDH cleaner. The input is never mutated and surviving spans are retained. */
+/** Original FULL-mode SDH cleaner. The input is never mutated and surviving spans are retained. */
 object SdhSubtitleCleaner {
+    private const val MUSIC_MARKER_REGEX =
+        "(?:[\u266A\u266B]|\u00E2\u2122[\u00AA\u00AB])"
+
     private val bracketPattern = Regex("""(?:\[([^\]\r\n]{1,80})]|［([^］\r\n]{1,80})］)""")
     private val parentheticalPattern = Regex("""\(([^()\r\n]{1,60})\)""")
-    private val pairedNotesPattern = Regex("""[♪♫]+\s*([^♪♫\r\n]{0,80}?)\s*[♪♫]+""")
+    private val pairedNotesPattern = Regex(
+        """(?:$MUSIC_MARKER_REGEX)+\s*((?:(?!$MUSIC_MARKER_REGEX)[^\r\n]){0,80}?)\s*(?:$MUSIC_MARKER_REGEX)+"""
+    )
+    private val leadingNotesPattern = Regex("""^\s*(?:$MUSIC_MARKER_REGEX)+""")
+    private val trailingNotesPattern = Regex("""(?:$MUSIC_MARKER_REGEX)+\s*$""")
+    private val notesOnlyPattern = Regex("""^(?:\s|$MUSIC_MARKER_REGEX)+$""")
+    private val quotedSongTitlePattern = Regex("""[\"“”][^\"“”\r\n]{1,60}[\"“”]""")
     private val whitespacePattern = Regex("""\s+""")
     private val dialogueWordPattern = Regex(
         """\b(?:i|i'm|i’m|me|my|mine|we|our|ours|you|your|yours|he|him|his|she|her|hers|they|them|their|this|that|who|what|where|when|why|how|please)\b""",
         RegexOption.IGNORE_CASE
     )
-    private val soundWordPattern = Regex(
-        """\b(?:applause|cheers?|cheering|claps?|clapping|clicks?|clicking|laughs?|laughter|laughing|chuckles?|chuckling|sighs?|sighing|scoffs?|scoffing|sniffs?|sniffing|sniffles?|inhales?|inhaling|exhales?|exhaling|whispers?|whispering|murmurs?|murmuring|mumbles?|mumbling|cries|crying|sobs?|sobbing|coughs?|coughing|groans?|groaning|grunts?|grunting|moans?|moaning|gasps?|gasping|breathes?|breathing|pants?|panting|whimpers?|whimpering|screams?|screaming|shouts?|shouting|yells?|yelling|footsteps?|rings?|ringing|buzzes?|buzzing|beeps?|beeping|knocks?|knocking|opens?|opening|closes?|closing|slams?|slamming|shatters?|shattering|crashes?|crashing|rustles?|rustling|creaks?|creaking|squeaks?|squeaking|thuds?|thudding|bangs?|banging|clatters?|clattering|rattles?|rattling|jingles?|jingling|chimes?|chiming|honks?|honking|revs?|revving|screeches?|screeching|whooshes?|whooshing|splashes?|splashing|barks?|barking|meows?|meowing|thunder|gunshots?|explosions?|doorbell|inaudible|indistinct|indistinctly|silence|static)\b""",
-        RegexOption.IGNORE_CASE
-    )
-    private val soundSubjectPattern = Regex(
-        """\b(?:door|doors|phone|telephone|glass|window|windows|music|radio|television|tv|alarm|alarms|sirens?|engine|engines|crowd|audience|wind|rain|thunder|gun|guns|shot|shots|explosion|explosions|footsteps?|voices?|voice|noise|noises|dog|dogs|cat|cats)\b""",
-        RegexOption.IGNORE_CASE
-    )
-    private val directParentheticalPattern = Regex(
-        """^(?:sighs?|sighing|laughs?|laughter|laughing|chuckles?|chuckling|whispers?|whispering|cries|crying|sobs?|sobbing|coughs?|coughing|groans?|groaning|moans?|moaning|gasps?|gasping|breathes?|breathing|pants?|panting|screams?|screaming|shouts?|shouting|inaudible|indistinct|indistinctly)$""",
-        RegexOption.IGNORE_CASE
-    )
-    private val languageDeliveryPattern = Regex("""^(?:in|speaking)\s+[\p{L}][\p{L}\- ]{1,24}$""", RegexOption.IGNORE_CASE)
-    private val deviceDeliveryPattern = Regex("""^(?:over|on|through)\s+(?:the\s+)?(?:radio|television|tv|phone|telephone|speaker|intercom)$""", RegexOption.IGNORE_CASE)
-    private val deliveryPattern = Regex("""^(?:angrily|softly|quietly|loudly|sarcastically|nervously|sadly|excitedly|calmly|tearfully|hesitantly)$""", RegexOption.IGNORE_CASE)
     private val speakerPrefixPattern = Regex("""^(\s*(?:[-–—]\s*)?)([\p{L}\p{N}][\p{L}\p{N}'’\- ]{0,31}(?:\s*\([^()\r\n]{1,24}\))?)\s*:\s*""")
     private val parentheticalQualifierPattern = Regex("""\s*\([^()]{1,24}\)\s*$""")
     private val musicWordPattern = Regex("""\b(?:music|instrumental|melody|theme|score|soundtrack|song|singing|sings|choir|orchestra|drums?|guitar|piano|violin|jazz|rock|classical)\b""", RegexOption.IGNORE_CASE)
     private val actionPattern = Regex("""\b(?:plays?|playing|continues?|continuing|starts?|starting|stops?|stopping|fades?|fading|swells?|swelling)\b""", RegexOption.IGNORE_CASE)
     private val musicMoodPattern = Regex("""\b(?:ominous|tense|dramatic|soft|quiet|loud|upbeat|somber|sad|romantic|suspenseful|eerie|gentle|background|sinister)\b""", RegexOption.IGNORE_CASE)
-    private val negativePattern = Regex("""\b(?:editor|translator|translation|subtitle|caption|note|literal|sign reads?)\b""", RegexOption.IGNORE_CASE)
-    private val noDialoguePattern = Regex("""^no\s+(?:(?:audible|discernible|intelligible)\s+)?(?:dialogue|dialog|speech|speaking|audio|sound)$""", RegexOption.IGNORE_CASE)
     private val speakerRolePattern = Regex("""^(?:man|woman|boy|girl|child|narrator|announcer|tv announcer|radio announcer|reporter|interviewer|host|operator|dispatcher|caller|spouse|husband|wife|mother|father|lawyer|attorney|judge|waiter|waitress|doctor|nurse|officer|detective|teacher|student|crowd|all|voice|voices|tom|john|mike|sarah)$""", RegexOption.IGNORE_CASE)
     private val speakerBlocklist = setOf("at", "chapter", "http", "https", "note", "ratio", "rule", "scene", "time", "visit", "warning")
     private val dialogueMarkers = setOf("-", "–", "—")
@@ -42,6 +34,7 @@ object SdhSubtitleCleaner {
     @JvmStatic
     fun clean(text: CharSequence): CharSequence? {
         if (text.isEmpty()) return null
+        if (isMusicOnlyCue(text.toString())) return null
         val lines = ArrayList<CharSequence>()
         var changed = false
         splitLines(text).forEach { line ->
@@ -61,16 +54,10 @@ object SdhSubtitleCleaner {
         if (original.isBlank() || isMusicOnlyLine(original)) return null
         val removals = ArrayList<IntRange>()
         bracketPattern.findAll(original).forEach { match ->
-            val body = match.groups[1]?.value ?: match.groups[2]?.value.orEmpty()
-            if (isSoundAnnotation(body) || isBracketSpeakerLabel(body)) {
-                removals += extendLeadingSeparator(original, match.range)
-            }
+            removals += extendLeadingSeparator(original, match.range)
         }
         parentheticalPattern.findAll(original).forEach { match ->
-            val body = normalize(match.groups[1]?.value.orEmpty())
-            if (!insideSpeakerPrefix(original, match.range) && isParentheticalAnnotation(body)) {
-                removals += extendLeadingSeparator(original, match.range)
-            }
+            removals += extendLeadingSeparator(original, match.range)
         }
         pairedNotesPattern.findAll(original).forEach { match ->
             if (isMusicDescription(match.groups[1]?.value.orEmpty())) removals += match.range
@@ -85,38 +72,36 @@ object SdhSubtitleCleaner {
             modified = true
         }
         val visible = current.toString().trim()
-        if (visible.isEmpty() || visible in dialogueMarkers || current.all { it.isWhitespace() || it.isMusicNote() }) return null
+        if (visible.isEmpty() || visible in dialogueMarkers || notesOnlyPattern.matches(current.toString())) return null
         return if (!modified && current.toString() == original) line else current
     }
 
-    private fun isSoundAnnotation(body: String): Boolean {
-        val normalized = normalize(body)
-        if (normalized.isEmpty() || normalized.length > 80 || negativePattern.containsMatchIn(normalized)) return false
-        if (noDialoguePattern.matches(normalized) || isMusicDescription(normalized)) return true
-        if (normalized.any { it == '.' || it == '?' || it == '!' }) return false
-        if (dialogueWordPattern.containsMatchIn(normalized) || normalized.split(' ').size > 8) return false
-        return soundWordPattern.containsMatchIn(normalized) ||
-            (soundSubjectPattern.containsMatchIn(normalized) && actionPattern.containsMatchIn(normalized))
-    }
-
-    private fun isParentheticalAnnotation(body: String) =
-        directParentheticalPattern.matches(body) || languageDeliveryPattern.matches(body) ||
-            deviceDeliveryPattern.matches(body) || deliveryPattern.matches(body) || isMusicDescription(body)
-
     private fun isMusicDescription(body: String): Boolean {
-        val normalized = normalize(body).trim { it.isMusicNote() || it.isWhitespace() }
+        val normalized = normalize(stripBoundaryMusicMarkers(body))
         if (normalized.isEmpty()) return true
         if (dialogueWordPattern.containsMatchIn(normalized)) return false
         val hasMusicWord = musicWordPattern.containsMatchIn(normalized)
-        return hasMusicWord && (normalized == "music" || normalized == "instrumental" ||
-            actionPattern.containsMatchIn(normalized) || musicMoodPattern.containsMatchIn(normalized) ||
-            normalized.split(' ').size <= 3)
+        val describesQuotedSongPlaying =
+            quotedSongTitlePattern.containsMatchIn(normalized) && actionPattern.containsMatchIn(normalized)
+        return describesQuotedSongPlaying || hasMusicWord && (
+            normalized == "music" || normalized == "instrumental" ||
+                actionPattern.containsMatchIn(normalized) || musicMoodPattern.containsMatchIn(normalized) ||
+                normalized.split(' ').size <= 3
+            )
     }
 
-    private fun isMusicOnlyLine(line: String): Boolean {
-        val trimmed = line.trim()
-        if (trimmed.isEmpty() || (!trimmed.first().isMusicNote() && !trimmed.last().isMusicNote())) return false
-        return isMusicDescription(trimmed.trim { it.isMusicNote() || it.isWhitespace() })
+    private fun isMusicOnlyLine(line: String) = isMusicOnlyCue(line)
+
+    private fun isMusicOnlyCue(cue: String): Boolean {
+        val trimmed = cue.trim()
+        if (trimmed.isEmpty()) return false
+        if (!leadingNotesPattern.containsMatchIn(trimmed) && !trailingNotesPattern.containsMatchIn(trimmed)) return false
+        return isMusicDescription(stripBoundaryMusicMarkers(trimmed))
+    }
+
+    private fun stripBoundaryMusicMarkers(value: String): String {
+        val withoutLeading = leadingNotesPattern.replace(value, "")
+        return trailingNotesPattern.replace(withoutLeading, "").trim()
     }
 
     private fun removeSpeakerPrefix(line: CharSequence): CharSequence? {
@@ -149,17 +134,6 @@ object SdhSubtitleCleaner {
                     (chars.first().isUpperCase() && chars.drop(1).all(Char::isLowerCase)))
             }
         }
-    }
-
-    private fun isBracketSpeakerLabel(raw: String): Boolean {
-        val label = raw.replace(parentheticalQualifierPattern, "").trim()
-        return speakerRolePattern.matches(label) || isLikelySpeakerLabel(label)
-    }
-
-    private fun insideSpeakerPrefix(line: String, range: IntRange): Boolean {
-        val colon = line.indexOf(':', range.last + 1)
-        if (colon <= range.last || colon > 48) return false
-        return isLikelySpeakerLabel(line.substring(0, colon).trim().removePrefix("-").removePrefix("–").removePrefix("—").trim())
     }
 
     private fun extendLeadingSeparator(line: String, range: IntRange): IntRange {
@@ -244,6 +218,5 @@ object SdhSubtitleCleaner {
         }
     }
 
-    private fun Char.isMusicNote() = this == '♪' || this == '♫'
     private fun Char.isHorizontalWhitespace() = this == ' ' || this == '\t'
 }
