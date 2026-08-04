@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  packages: read
 
 jobs:
   build-and-apply:
@@ -25,7 +26,7 @@ jobs:
       - name: Configure Morphe package credentials
         shell: pwsh
         env:
-          GPR_KEY: ${{ secrets.MORPHE_PACKAGES_TOKEN }}
+          GPR_KEY: ${{ secrets.MORPHE_PACKAGES_TOKEN || github.token }}
         run: |
           New-Item -ItemType Directory -Force "$HOME\.gradle" | Out-Null
           @("gpr.user=$env:GITHUB_ACTOR", "gpr.key=$env:GPR_KEY") |
