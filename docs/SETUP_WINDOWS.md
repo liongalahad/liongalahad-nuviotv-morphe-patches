@@ -8,13 +8,14 @@ Run `scripts/bootstrap.ps1 -InstallMissing`. It:
 - configures `ANDROID_HOME`/`ANDROID_SDK_ROOT` and adds platform-tools/emulator to the user PATH;
 - verifies Node.js LTS, GitHub CLI, `Pixel_10`, `Television_4K`, and WHPX;
 - downloads the pinned Morphe Desktop JAR to gitignored `tools/`;
+- clones and verifies the official Morphe Gradle plugin and patcher at the pinned tags under gitignored `tools/`;
 - creates one gitignored JKS test key and credentials under `local/keystore/`.
 
 The same key must be used for CLI and Manager test outputs. Back up `local/keystore` securely if test upgrades must survive a machine rebuild.
 
 ## GitHub credentials
 
-The active `liongalahad` credential needs `repo`, `workflow`, and `read:packages`. `read:packages` is required to resolve Morphe's Gradle plugin. Morphe Manager does not need a PAT to read the public patch source.
+The active `liongalahad` credential needs `repo` and `workflow`. Local builds use the public, pinned Morphe source checkouts created by bootstrap, so `read:packages` is not required locally. Morphe Manager does not need a PAT to read the public patch source.
 
 Configure the Actions secret `MORPHE_PACKAGES_TOKEN` with a PAT that can read Morphe's GitHub Packages registry. Never use this secret for APK downloads or publish it to logs.
 

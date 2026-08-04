@@ -10,6 +10,16 @@ function Initialize-NuvioEnvironment {
     $env:JAVA_HOME = $config.android.studioJdk
     $env:ANDROID_HOME = $config.android.sdk
     $env:ANDROID_SDK_ROOT = $config.android.sdk
+
+    $localGradlePlugin = Join-Path $script:RepoRoot ("tools\" + $config.morpheSources.gradlePlugin.directory)
+    $localPatcher = Join-Path $script:RepoRoot ("tools\" + $config.morpheSources.patcher.directory)
+    if (Test-Path (Join-Path $localGradlePlugin 'settings.gradle.kts')) {
+        $env:MORPHE_GRADLE_PLUGIN_SRC = (Resolve-Path $localGradlePlugin).Path
+    }
+    if (Test-Path (Join-Path $localPatcher 'settings.gradle.kts')) {
+        $env:MORPHE_PATCHER_SRC = (Resolve-Path $localPatcher).Path
+    }
+
     $paths = @(
         (Join-Path $env:JAVA_HOME 'bin'),
         (Join-Path $env:ANDROID_HOME 'platform-tools'),
