@@ -4,6 +4,8 @@ Public Morphe patch source for the official NuvioTV Android application. The fir
 
 This repository distributes patch code and `.mpp` bundles. It never distributes original, patched, or modified NuvioTV APKs.
 
+The enabled patch applies explicitly documented aggressive text rules rather than an AI classifier. Read [exact SDH removal behavior and destructive limitations](docs/SDH_REMOVAL.md) before reporting a missed annotation.
+
 ## Install in Morphe Manager
 
 1. Add `liongalahad/nuviotv-patches` as a GitHub patch source. No GitHub PAT is required because the repository is public.
@@ -24,7 +26,7 @@ Deep link: `https://morphe.software/add-source?github=liongalahad/nuviotv-patche
 .\scripts\verify-all.ps1
 ```
 
-Every run is isolated under `local/patches/<patch-id>/<timestamp>/`. See [Windows setup](docs/SETUP_WINDOWS.md), [architecture](docs/ARCHITECTURE.md), [testing](docs/TESTING.md), and [release rules](docs/RELEASING.md).
+Every run is isolated under `local/patches/<patch-id>/<timestamp>/`. See [Windows setup](docs/SETUP_WINDOWS.md), [architecture](docs/ARCHITECTURE.md), [exact SDH rules](docs/SDH_REMOVAL.md), [testing](docs/TESTING.md), and [release rules](docs/RELEASING.md).
 
 ## Available patches
 
