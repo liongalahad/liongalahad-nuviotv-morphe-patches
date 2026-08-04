@@ -1,3 +1,9 @@
+## [1.0.0-dev.5](https://github.com/liongalahad/nuviotv-patches/compare/v1.0.0-dev.4...v1.0.0-dev.5) (2026-08-04)
+
+### 🐛 Bug Fixes
+
+* integrate native Morphe subtitle settings ([4fd6897](https://github.com/liongalahad/nuviotv-patches/commit/4fd68972fe2b46e60f16d76fbf2d41ae8e1dab0b))
+
 ## [1.0.0-dev.4](https://github.com/liongalahad/nuviotv-patches/compare/v1.0.0-dev.3...v1.0.0-dev.4) (2026-08-04)
 
 ### ✨ New Features
