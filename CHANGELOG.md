@@ -1,3 +1,9 @@
+## [1.0.0-dev.3](https://github.com/liongalahad/nuviotv-patches/compare/v1.0.0-dev.2...v1.0.0-dev.3) (2026-08-04)
+
+### 🐛 Bug Fixes
+
+* open Morphe settings from TV rail ([6452d86](https://github.com/liongalahad/nuviotv-patches/commit/6452d86cbeb9f0b5e03a079b58c5f74d9b5e1a0e))
+
 ## [1.0.0-dev.2](https://github.com/liongalahad/nuviotv-patches/compare/v1.0.0-dev.1...v1.0.0-dev.2) (2026-08-04)
 
 ### 🐛 Bug Fixes

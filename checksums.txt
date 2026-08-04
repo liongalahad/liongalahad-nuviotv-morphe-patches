@@ -1,3 +1,3 @@
-4bd4fc7316d939307945be9655bc6ef2b68f44fb39765d45c697a4486d1a8352  patches/build/libs/patches-1.0.0-dev.2.mpp
-82fe5deddc3864f1bc94548047ce246c6e0b8a4e23e2732b5bb58f42a59b59ee  patches-list.json
-ecf38a37f498ef8ff8409966299bc03919ec09f4930056e9c118596c6d8df815  patches-bundle.json
+11be929fdc18f2553baf9e15770af27e7685c990c45dea6762c349cb33707faf  patches/build/libs/patches-1.0.0-dev.3.mpp
+f109b3459d4261f123280ccf85a0af27d0773514504b1b372da47d71349d0f7c  patches-list.json
+c8eb246932f5871bdf7cd59b59ecbefbfe0ca5322d4ec2caea29efc5c684efb2  patches-bundle.json
