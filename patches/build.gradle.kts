@@ -1,14 +1,13 @@
-group = "app.template"
+group = "io.github.liongalahad.nuviotv"
 
 patches {
-    // TODO: Update this section with your project details.
     about {
-        name = "UserXYZ Patches"
-        description = "Patches for apps I like"
-        source = "git@github.com:UserXYZ/morphe-patches.git"
-        author = "Awesome dev"
-        contact = "na"
-        website = "na"
+        name = "NuvioTV Patches"
+        description = "Morphe patches for the official NuvioTV Android application"
+        source = "https://github.com/liongalahad/nuviotv-patches"
+        author = "liongalahad"
+        contact = "https://github.com/liongalahad/nuviotv-patches/issues"
+        website = "https://github.com/liongalahad/nuviotv-patches"
         license = "GPLv3"
     }
 }

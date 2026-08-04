@@ -1,0 +1,46 @@
+{
+  "$schema": "../patch.schema.json",
+  "id": "sdh-annotations",
+  "name": "Remove SDH Annotations",
+  "category": "subtitles",
+  "target": {
+    "application": "NuvioTV",
+    "package": "com.nuvio.tv",
+    "versions": ["0.8.1-beta"],
+    "launchComponent": "com.nuvio.tv/.MainActivity"
+  },
+  "assets": {
+    "x86_64": {
+      "url": "https://github.com/NuvioMedia/NuvioTV/releases/download/0.8.1-beta/app-full-x86_64-release.apk",
+      "sha256": "9dd9256fe3070efc0e3254dff6969c4f8ff3d2b4921e3fe0695f8c64d8766c93"
+    },
+    "arm64-v8a": {
+      "url": "https://github.com/NuvioMedia/NuvioTV/releases/download/0.8.1-beta/app-full-arm64-v8a-release.apk",
+      "sha256": "dfd7a756c48d22694c63e6ee853b3111651d93140c518fc478fce15ee4ae51b0"
+    },
+    "armeabi-v7a": {
+      "url": "https://github.com/NuvioMedia/NuvioTV/releases/download/0.8.1-beta/app-full-armeabi-v7a-release.apk",
+      "sha256": "5dadf7cefd795352e271ed46dc1cb5cf32328e84e63254bef5dfde3c2670b30b"
+    }
+  },
+  "dependencies": ["settings-hub"],
+  "emulators": {"phone": "Pixel_10", "tv": "Television_4K"},
+  "fingerprints": ["SettingsScreenFingerprint", "SettingsCategoryClickFingerprint", "CueGroupOutputFingerprint", "LegacyCueOutputFingerprint"],
+  "inspection": {
+    "activity": "io.github.liongalahad.nuviotv.extension.settings.MorpheSettingsActivity",
+    "metadata": "io.github.liongalahad.nuviotv.settings.category.subtitles",
+    "classes": [
+      "io.github.liongalahad.nuviotv.extension.settings.MorpheSettingsRuntime",
+      "io.github.liongalahad.nuviotv.extension.subtitles.sdh.SdhCueTransformer"
+    ]
+  },
+  "focusedTests": ["SdhSubtitleCleanerTest", "isolated x86_64 exclusive-mode application", "manifest and injected-class inspection"],
+  "acceptance": [
+    "Unpatched NuvioTV has no Morphe entry",
+    "Patched NuvioTV shows Settings → Morphe → Subtitles",
+    "Toggle defaults OFF and persists after force-stop and reboot",
+    "OFF preserves the full subtitle text",
+    "ON removes SDH annotations without losing dialogue, timing, styling, URLs, ratios, or non-text cues",
+    "No crash, ANR, VerifyError, or fatal log during launch, settings, playback, seeking, or track changes"
+  ]
+}
