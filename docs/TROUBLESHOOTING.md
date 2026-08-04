@@ -2,7 +2,7 @@
 
 ## Morphe dependencies fail to resolve
 
-The GitHub credential needs `read:packages`. Local `repo` access alone is insufficient. Actions uses `MORPHE_PACKAGES_TOKEN` rather than the repository `GITHUB_TOKEN` for the Morphe registry.
+Run `scripts/bootstrap.ps1` to install and verify the pinned public Morphe Gradle plugin and patcher source checkouts. Local scripts select these checkouts automatically and do not require `read:packages`. Actions uses `MORPHE_PACKAGES_TOKEN` for the Morphe registry instead.
 
 ## Fingerprint has zero or multiple matches
 

@@ -31,6 +31,33 @@ New-Item -ItemType Directory -Force $tools | Out-Null
 $morpheJar = Join-Path $tools $config.morpheDesktop.file
 if (-not (Test-Path $morpheJar)) { Invoke-WebRequest $config.morpheDesktop.url -OutFile $morpheJar }
 
+function Install-PinnedMorpheSource([Parameter(Mandatory)]$Source) {
+    if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+        throw 'Git is required to install the pinned Morphe build sources.'
+    }
+
+    $path = Join-Path $tools $Source.directory
+    $expectedTag = "v$($Source.version)"
+    if (-not (Test-Path $path)) {
+        & git clone --quiet --depth 1 --branch $expectedTag $Source.url $path
+        if ($LASTEXITCODE -ne 0) { throw "Could not clone $($Source.url) at $expectedTag." }
+    }
+
+    if (-not (Test-Path (Join-Path $path '.git'))) {
+        throw "Pinned Morphe source is not a Git checkout: $path"
+    }
+    $actualTag = (& git -C $path describe --tags --exact-match HEAD 2>$null).Trim()
+    if ($LASTEXITCODE -ne 0 -or $actualTag -ne $expectedTag) {
+        throw "Morphe source $path must be checked out exactly at $expectedTag; found '$actualTag'."
+    }
+    $path
+}
+
+$gradlePluginSource = Install-PinnedMorpheSource $config.morpheSources.gradlePlugin
+$patcherSource = Install-PinnedMorpheSource $config.morpheSources.patcher
+$env:MORPHE_GRADLE_PLUGIN_SRC = (Resolve-Path $gradlePluginSource).Path
+$env:MORPHE_PATCHER_SRC = (Resolve-Path $patcherSource).Path
+
 $keyDir = Join-Path $repo 'local\keystore'
 $keyPath = Join-Path $keyDir 'nuviotv-test.jks'
 $credentialPath = Join-Path $keyDir 'credentials.json'
@@ -57,7 +84,7 @@ if ($acceleration -notmatch 'usable|installed') { throw "Emulator acceleration i
 $auth = (& gh auth status --active 2>&1) -join [Environment]::NewLine
 if ($auth -notmatch 'liongalahad') { throw 'GitHub CLI is not authenticated as liongalahad.' }
 if ($auth -notmatch 'read:packages') {
-    Write-Warning 'The active GitHub token lacks read:packages. Morphe Gradle dependencies cannot resolve until that scope is added.'
+    Write-Warning 'The active GitHub token lacks read:packages. Local builds will use the pinned public Morphe source checkouts instead.'
 }
 
 [pscustomobject]@{
@@ -66,5 +93,7 @@ if ($auth -notmatch 'read:packages') {
     AndroidSdk = $env:ANDROID_HOME
     AVDs = $avds -join ', '
     MorpheDesktop = $config.morpheDesktop.version
+    MorpheGradlePlugin = "v$($config.morpheSources.gradlePlugin.version)"
+    MorphePatcher = "v$($config.morpheSources.patcher.version)"
     Keystore = $keyPath
 } | Format-List
