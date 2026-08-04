@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-08-04T09:55:12",
-  "description": "## [1.0.0-dev.4](https://github.com/liongalahad/nuviotv-patches/compare/v1.0.0-dev.3...v1.0.0-dev.4) (2026-08-04)\n\n### ✨ New Features\n\n* support official universal APK ([1eea66f](https://github.com/liongalahad/nuviotv-patches/commit/1eea66f4e8d16039abdf0bf7cd411e8f575defc8))",
-  "download_url": "https://github.com/liongalahad/nuviotv-patches/releases/download/v1.0.0-dev.4/patches-1.0.0-dev.4.mpp",
+  "created_at": "2026-08-04T12:01:47",
+  "description": "## [1.0.0-dev.5](https://github.com/liongalahad/nuviotv-patches/compare/v1.0.0-dev.4...v1.0.0-dev.5) (2026-08-04)\n\n### 🐛 Bug Fixes\n\n* integrate native Morphe subtitle settings ([4fd6897](https://github.com/liongalahad/nuviotv-patches/commit/4fd68972fe2b46e60f16d76fbf2d41ae8e1dab0b))",
+  "download_url": "https://github.com/liongalahad/nuviotv-patches/releases/download/v1.0.0-dev.5/patches-1.0.0-dev.5.mpp",
   "signature_download_url": "",
-  "version": "1.0.0-dev.4"
+  "version": "1.0.0-dev.5"
 }
