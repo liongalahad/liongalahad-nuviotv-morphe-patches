@@ -20,9 +20,9 @@ Patched and official NuvioTV signatures differ. Use the dedicated test profile. 
 
 Run `bootstrap.ps1`, then verify `adb devices`, `emulator -list-avds`, and `emulator -accel-check`. The scripts identify AVDs by reported AVD name, not whichever emulator starts first.
 
-## Private source failure
+## Patch source failure
 
-Confirm the repository remains private, the PAT can read `liongalahad/nuviotv-patches`, the release contains a compatible `.mpp` and patch list, and Manager is using the intended prerelease/stable channel. Never place the PAT in `patch.json`, screenshots, logs, or test reports.
+Confirm the public repository is reachable, the release contains a compatible `.mpp` and patch list, and Manager is using the intended prerelease/stable channel. A PAT is not required for this source.
 
 ## Toggle does not update playback
 

@@ -3,6 +3,7 @@ param(
     [Parameter(Mandatory)][string]$Patch,
     [Parameter(Mandatory)][ValidateSet('tv','phone','real')][string]$Device,
     [string]$Serial,
+    [ValidateSet('auto','universal','x86_64','arm64-v8a','armeabi-v7a')][string]$Asset = 'auto',
     [switch]$ReplaceOfficial
 )
 
@@ -16,7 +17,7 @@ if ($Device -eq 'real') {
     }
     if (-not $Serial) { throw 'No real Android device is connected. Supply -Serial when more than one is present.' }
     $reportedAbi = (& adb -s $Serial shell getprop ro.product.cpu.abi).Trim()
-    $abi = switch -Regex ($reportedAbi) {
+    $deviceAbi = switch -Regex ($reportedAbi) {
         '^arm64' { 'arm64-v8a'; break }
         '^(armeabi|armv7)' { 'armeabi-v7a'; break }
         default { throw "Unsupported real-device ABI: $reportedAbi" }
@@ -34,11 +35,16 @@ if ($Device -eq 'real') {
     }
     if (-not $Serial) { throw "Could not start AVD '$avd'." }
     Wait-ForAndroid $Serial
-    $abi = 'x86_64'
+    $deviceAbi = 'x86_64'
 }
 
-$run = New-PatchRunDirectory $Patch
-& "$PSScriptRoot\patch.ps1" -Patch $Patch -Abi $abi -RunDirectory $run
+$assetKey = if ($Asset -eq 'auto') { $deviceAbi } else { $Asset }
+if ($assetKey -ne 'universal' -and $assetKey -ne $deviceAbi) {
+    throw "Asset '$assetKey' is incompatible with device ABI '$deviceAbi'. Use '$deviceAbi' or 'universal'."
+}
+
+$run = New-PatchRunDirectory $Patch $assetKey
+& "$PSScriptRoot\patch.ps1" -Patch $Patch -Abi $assetKey -RunDirectory $run
 if ($LASTEXITCODE -ne 0) { throw 'Patch application failed.' }
 $apk = Join-Path $run 'nuviotv-patched.apk'
 
@@ -93,7 +99,7 @@ $status = if ($fatal) { 'FAILED: fatal startup log found' } else { 'AUTOMATION P
 
 - Status: $status
 - Device: $Device / $Serial
-- ABI asset: $abi
+- APK asset: $assetKey
 - Run: $run
 - Automated: build, exclusive patch, digest verification, sign, install, launch, logcat, screenshot, UI dump
 
@@ -103,7 +109,7 @@ $checklist
 
 ## Manager check (Pixel_10)
 
-- [ ] Add `liongalahad/nuviotv-patches` as a private source with a user-supplied PAT.
+- [ ] Add the public `liongalahad/nuviotv-patches` source and enable prereleases.
 - [ ] Select only `Remove SDH Annotations` and export with the same test signing identity.
 - [ ] Install the exported APK on the TV test target and repeat the runtime checks.
 "@ | Set-Content -Encoding UTF8 (Join-Path $run 'TEST_REPORT.md')

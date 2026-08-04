@@ -46,9 +46,13 @@ function Get-PatchBundle {
     $bundle.FullName
 }
 
-function New-PatchRunDirectory([Parameter(Mandatory)][string]$Patch) {
+function New-PatchRunDirectory(
+    [Parameter(Mandatory)][string]$Patch,
+    [string]$Asset
+) {
     $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-    $path = Join-Path $script:RepoRoot "local\patches\$Patch\$stamp"
+    $suffix = if ($Asset) { "-$Asset" } else { '' }
+    $path = Join-Path $script:RepoRoot "local\patches\$Patch\$stamp$suffix"
     New-Item -ItemType Directory -Force $path | Out-Null
     $path
 }

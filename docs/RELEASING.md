@@ -13,7 +13,7 @@ Before merging to `main`:
 
 - all unit/build/list/isolated application/inspection checks pass;
 - `Television_4K` runtime acceptance passes;
-- `Pixel_10` Manager/private-source flow passes;
+- `Pixel_10` Manager/public-source flow passes;
 - a real Android TV passes install, D-pad, persistence, Media3 playback, seeking, track changes, and patch behavior;
 - `validation/<version>-<device>.md` records Nuvio version, official digest, bundle version/digest, model, ABI, Android version, and results.
 

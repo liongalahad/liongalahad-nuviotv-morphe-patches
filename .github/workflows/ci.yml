@@ -11,12 +11,23 @@ permissions:
 
 jobs:
   build-and-apply:
+    name: build-and-apply (${{ matrix.target.name }})
     runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - name: x86_64
+            url: https://github.com/NuvioMedia/NuvioTV/releases/download/0.8.1-beta/app-full-x86_64-release.apk
+            sha256: 9dd9256fe3070efc0e3254dff6969c4f8ff3d2b4921e3fe0695f8c64d8766c93
+          - name: universal
+            url: https://github.com/NuvioMedia/NuvioTV/releases/download/0.8.1-beta/app-full-universal-release.apk
+            sha256: 11961657275fd3d3a57ae1235abad766f829e8f4bc3cda219c2e39c7ada4defd
     env:
       GITHUB_ACTOR: liongalahad
       MORPHE_PACKAGES_TOKEN: ${{ secrets.MORPHE_PACKAGES_TOKEN }}
-      TARGET_URL: https://github.com/NuvioMedia/NuvioTV/releases/download/0.8.1-beta/app-full-x86_64-release.apk
-      TARGET_SHA256: 9dd9256fe3070efc0e3254dff6969c4f8ff3d2b4921e3fe0695f8c64d8766c93
+      TARGET_URL: ${{ matrix.target.url }}
+      TARGET_SHA256: ${{ matrix.target.sha256 }}
       MORPHE_URL: https://github.com/MorpheApp/morphe-desktop/releases/download/v1.12.0/morphe-desktop-1.12.0-all.jar
     steps:
       - uses: actions/checkout@v7
