@@ -1,3 +1,9 @@
+## [1.0.0-dev.4](https://github.com/liongalahad/nuviotv-patches/compare/v1.0.0-dev.3...v1.0.0-dev.4) (2026-08-04)
+
+### ✨ New Features
+
+* support official universal APK ([1eea66f](https://github.com/liongalahad/nuviotv-patches/commit/1eea66f4e8d16039abdf0bf7cd411e8f575defc8))
+
 ## [1.0.0-dev.3](https://github.com/liongalahad/nuviotv-patches/compare/v1.0.0-dev.2...v1.0.0-dev.3) (2026-08-04)
 
 ### 🐛 Bug Fixes
