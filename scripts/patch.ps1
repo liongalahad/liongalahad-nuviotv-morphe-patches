@@ -71,21 +71,23 @@ if ($aapt) {
     & $aapt.FullName dump xmltree --file AndroidManifest.xml $output 2>&1 |
         Set-Content -Encoding UTF8 (Join-Path $RunDirectory 'manifest-inspection.txt')
     $inspection = Get-Content (Join-Path $RunDirectory 'manifest-inspection.txt') -Raw
-    foreach ($required in @($manifest.inspection.activity, $manifest.inspection.metadata)) {
+    foreach ($required in @($manifest.inspection.provider, $manifest.inspection.metadata)) {
         if ($inspection -notmatch [regex]::Escape($required)) { throw "Post-patch manifest inspection did not find $required" }
     }
 }
 
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $needles = @(
-    'Lio/github/liongalahad/nuviotv/extension/settings/MorpheSettingsActivity;',
     'Lio/github/liongalahad/nuviotv/extension/settings/MorpheSettingsRuntime;',
+    'Lio/github/liongalahad/nuviotv/extension/settings/MorpheComposeToggleAction;',
+    'Lio/github/liongalahad/nuviotv/extension/settings/MorpheSubtitlesExpandAction;',
     'Lio/github/liongalahad/nuviotv/extension/subtitles/sdh/SdhCueTransformer;',
     'subtitles.remove_sdh_annotations',
     'Landroidx/media3/common/text/CueGroup;'
 )
+$forbiddenNeedles = @('Lcom/google/common/collect/ImmutableList;')
 $found = @{}
-$needles | ForEach-Object { $found[$_] = $false }
+($needles + $forbiddenNeedles) | ForEach-Object { $found[$_] = $false }
 $archive = [IO.Compression.ZipFile]::OpenRead($output)
 try {
     foreach ($entry in $archive.Entries | Where-Object { $_.Name -match '^classes\d*\.dex$' }) {
@@ -94,7 +96,9 @@ try {
         try {
             $stream.CopyTo($memory)
             $text = [Text.Encoding]::ASCII.GetString($memory.ToArray())
-            foreach ($needle in $needles) { if ($text.Contains($needle)) { $found[$needle] = $true } }
+            foreach ($needle in ($needles + $forbiddenNeedles)) {
+                if ($text.Contains($needle)) { $found[$needle] = $true }
+            }
         } finally {
             $memory.Dispose()
             $stream.Dispose()
@@ -106,6 +110,9 @@ try {
 $found | ConvertTo-Json | Set-Content -Encoding UTF8 (Join-Path $RunDirectory 'dex-inspection.json')
 foreach ($needle in $needles) {
     if (-not $found[$needle]) { throw "Post-patch DEX inspection did not find $needle" }
+}
+foreach ($needle in $forbiddenNeedles) {
+    if ($found[$needle]) { throw "Post-patch DEX inspection found release-incompatible type $needle" }
 }
 
 [pscustomobject]@{ RunDirectory = $RunDirectory; PatchedApk = $output; Result = $result }

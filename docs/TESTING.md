@@ -4,7 +4,7 @@
 
 1. Unit: extension cleaner/runtime behavior and Android span/Media3 object preservation.
 2. Application: hash the official APK, build `.mpp`, select one patch in exclusive mode, and require all fingerprints to resolve once on both x86_64 and universal assets.
-3. Inspection: verify activity and metadata in the manifest, injected classes, preference hook, and cue hook.
+3. Inspection: verify initialization provider and metadata in the manifest, injected classes, native switch call, preference hook, and cue hook.
 4. Phone Manager: add the public GitHub source on `Pixel_10`, select one patch, export using the dedicated test key policy, and install the result on the TV target.
 5. TV AVD: install/launch on `Television_4K`; collect logcat, screenshot, UI hierarchy, device facts, patch result, input/bundle digests, and the manual checklist.
 6. Real Android TV: install, D-pad navigate, check persistence through force-stop/reboot, run Media3 playback/seeking/track changes, and record exact device/version/ABI results.

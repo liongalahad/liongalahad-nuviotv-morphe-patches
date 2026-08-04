@@ -29,12 +29,14 @@
   },
   "dependencies": ["settings-hub"],
   "emulators": {"phone": "Pixel_10", "tv": "Television_4K"},
-  "fingerprints": ["SettingsScreenFingerprint", "SettingsCategoryClickFingerprint", "CueGroupOutputFingerprint", "LegacyCueOutputFingerprint"],
+  "fingerprints": ["SettingsScreenFingerprint", "ExperienceSettingsHeaderFingerprint", "ExperienceSettingsCardFingerprint", "NativeSettingsSwitchUsageFingerprint", "CueGroupOutputFingerprint", "LegacyCueOutputFingerprint"],
   "inspection": {
-    "activity": "io.github.liongalahad.nuviotv.extension.settings.MorpheSettingsActivity",
+    "provider": "io.github.liongalahad.nuviotv.extension.settings.MorpheInitProvider",
     "metadata": "io.github.liongalahad.nuviotv.settings.category.subtitles",
     "classes": [
       "io.github.liongalahad.nuviotv.extension.settings.MorpheSettingsRuntime",
+      "io.github.liongalahad.nuviotv.extension.settings.MorpheComposeToggleAction",
+      "io.github.liongalahad.nuviotv.extension.settings.MorpheSubtitlesExpandAction",
       "io.github.liongalahad.nuviotv.extension.subtitles.sdh.SdhCueTransformer"
     ]
   },
@@ -42,6 +44,7 @@
   "acceptance": [
     "Unpatched NuvioTV has no Morphe entry",
     "Patched NuvioTV shows Settings → Morphe → Subtitles",
+    "Subtitles expands in the existing pane and the row, focus outline, font, spacing, and switch match Nuvio's native Layout and Playback settings",
     "Toggle defaults OFF and persists after force-stop and reboot",
     "OFF preserves the full subtitle text",
     "ON removes SDH annotations without losing dialogue, timing, styling, URLs, ratios, or non-text cues",

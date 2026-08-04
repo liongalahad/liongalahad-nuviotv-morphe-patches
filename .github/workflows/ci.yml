@@ -69,7 +69,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Isolated patching failed.' }
           $aapt = Get-ChildItem "$env:ANDROID_HOME\build-tools" -Recurse -Filter aapt2.exe | Sort-Object FullName -Descending | Select-Object -First 1
           $manifest = (& $aapt.FullName dump xmltree --file AndroidManifest.xml "$env:RUNNER_TEMP\patched.apk") -join "`n"
-          foreach ($needle in @('MorpheSettingsActivity','nuviotv.settings.category.subtitles')) {
+          foreach ($needle in @('MorpheInitProvider','nuviotv.settings.category.subtitles')) {
             if ($manifest -notmatch $needle) { throw "Manifest inspection did not find $needle" }
           }
           Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -80,8 +80,11 @@ jobs:
               try { $stream.CopyTo($memory); [Text.Encoding]::ASCII.GetString($memory.ToArray()) } finally { $memory.Dispose(); $stream.Dispose() }
             }) -join ''
           } finally { $archive.Dispose() }
-          foreach ($needle in @('MorpheSettingsRuntime','SdhCueTransformer','subtitles.remove_sdh_annotations','Landroidx/media3/common/text/CueGroup;')) {
+          foreach ($needle in @('MorpheSettingsRuntime','MorpheComposeToggleAction','MorpheSubtitlesExpandAction','SdhCueTransformer','subtitles.remove_sdh_annotations','Landroidx/media3/common/text/CueGroup;')) {
             if (-not $dexText.Contains($needle)) { throw "DEX inspection did not find $needle" }
+          }
+          if ($dexText.Contains('Lcom/google/common/collect/ImmutableList;')) {
+            throw 'DEX inspection found a release-incompatible Guava descriptor.'
           }
           $result = Get-Content "$env:RUNNER_TEMP\result.json" -Raw
           if ($result -notmatch 'Remove SDH Annotations') { throw 'Patch result does not identify the selected patch.' }
