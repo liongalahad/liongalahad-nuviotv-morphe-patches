@@ -1,3 +1,9 @@
+## [1.0.0-dev.7](https://github.com/liongalahad/nuviotv-patches/compare/v1.0.0-dev.6...v1.0.0-dev.7) (2026-08-04)
+
+### 🐛 Bug Fixes
+
+* restore full SDH annotation removal ([b498bf4](https://github.com/liongalahad/nuviotv-patches/commit/b498bf4a1292ddf9b6cace3ef9bc1611b21592ce))
+
 ## [1.0.0-dev.6](https://github.com/liongalahad/nuviotv-patches/compare/v1.0.0-dev.5...v1.0.0-dev.6) (2026-08-04)
 
 ### 🐛 Bug Fixes
