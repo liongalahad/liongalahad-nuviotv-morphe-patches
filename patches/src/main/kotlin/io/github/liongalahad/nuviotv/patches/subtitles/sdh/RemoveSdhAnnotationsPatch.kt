@@ -19,8 +19,8 @@ private const val SETTINGS_RUNTIME =
     "Lio/github/liongalahad/nuviotv/extension/settings/MorpheSettingsRuntime;"
 private const val CUE_TRANSFORMER =
     "Lio/github/liongalahad/nuviotv/extension/subtitles/sdh/SdhCueTransformer;"
-private const val MORPHE_MODE_ACTION =
-    "Lio/github/liongalahad/nuviotv/extension/settings/MorpheComposeModeAction;"
+private const val MORPHE_DIALOG_ACTION =
+    "Lio/github/liongalahad/nuviotv/extension/settings/MorpheSdhModeDialogAction;"
 private const val MORPHE_EXPAND_ACTION =
     "Lio/github/liongalahad/nuviotv/extension/settings/MorpheSubtitlesExpandAction;"
 
@@ -87,15 +87,6 @@ val removeSdhAnnotationsPatch = bytecodePatch(
                             parameters[9] == "I"
                     }
             }
-        val nativeSwitchDescriptor = buildString {
-            append(nativeSwitchReference.definingClass)
-            append("->")
-            append(nativeSwitchReference.name)
-            append('(')
-            nativeSwitchReference.parameterTypes.forEach { append(it) }
-            append(')')
-            append(nativeSwitchReference.returnType)
-        }
         val composerType = nativeSwitchReference.parameterTypes[7].toString()
         val nativeCardCalls = ExperienceSettingsCardFingerprint.method.implementation!!.instructions
             .withIndex()
@@ -127,25 +118,16 @@ val removeSdhAnnotationsPatch = bytecodePatch(
                 .sumOf { if (it.toString() == "J" || it.toString() == "D") 2 else 1 }
             val start = range.startRegister
             val composerRegister = start + composerWordOffset
-            val modeRows = (0..2).joinToString("\n") { mode ->
-                """
-                    const/16 v${start + 6}, 0x${mode.toString(16)}
-                    invoke-static/range { v${start + 6} .. v${start + 6} }, $SETTINGS_RUNTIME->sdhModeTitle(I)Ljava/lang/String;
-                    move-result-object v$start
-                    invoke-static/range { v${start + 6} .. v${start + 6} }, $SETTINGS_RUNTIME->sdhModeDescription(I)Ljava/lang/String;
-                    move-result-object v${start + 1}
-                    invoke-static/range { v${start + 6} .. v${start + 6} }, $SETTINGS_RUNTIME->isSdhModeSelected(I)Z
-                    move-result v${start + 2}
-                    invoke-static/range { v${start + 6} .. v${start + 6} }, $MORPHE_MODE_ACTION->forMode(I)Lkotlin/jvm/functions/Function0;
-                    move-result-object v${start + 3}
-                    move-object/from16 v${start + 7}, v$composerRegister
-                    const/4 v${start + 5}, 0x0
-                    const/4 v${start + 6}, 0x1
-                    const/4 v${start + 8}, 0x0
-                    const/16 v${start + 9}, 0x30
-                    invoke-static/range { v$start .. v${start + 9} }, $nativeSwitchDescriptor
-                """.trimIndent()
+            val nativeCardDescriptor = buildString {
+                append(reference.definingClass)
+                append("->")
+                append(reference.name)
+                append('(')
+                reference.parameterTypes.forEach { append(it) }
+                append(')')
+                append(reference.returnType)
             }
+            val nativeCardEndRegister = start + range.registerCount - 1
 
             ExperienceSettingsCardFingerprint.method.addInstructionsWithLabels(
                 index + 1,
@@ -153,7 +135,14 @@ val removeSdhAnnotationsPatch = bytecodePatch(
                     invoke-static {}, $SETTINGS_RUNTIME->isSubtitlesExpanded()Z
                     move-result v${start + 6}
                     if-eqz v${start + 6}, :morphe_collapsed_$index
-                    $modeRows
+                    invoke-static {}, $SETTINGS_RUNTIME->sdhDialogTitle()Ljava/lang/String;
+                    move-result-object v$start
+                    invoke-static {}, $SETTINGS_RUNTIME->currentSdhModeTitle()Ljava/lang/String;
+                    move-result-object v${start + 1}
+                    const/4 v${start + 2}, 0x0
+                    invoke-static {}, $MORPHE_DIALOG_ACTION->create()Lkotlin/jvm/functions/Function0;
+                    move-result-object v${start + 3}
+                    invoke-static/range { v$start .. v$nativeCardEndRegister }, $nativeCardDescriptor
                     sget-object v$start, Lkotlin/Unit;->INSTANCE:Lkotlin/Unit;
                     return-object v$start
                     :morphe_collapsed_$index

@@ -22,10 +22,14 @@ public final class MorpheComposeModeAction implements Function0<Unit> {
         refreshAction = action;
     }
 
+    static void refreshSettingsPane() {
+        MorpheComposeToggleAction.pulseCapturedComposeState(refreshAction);
+    }
+
     @Override
     public Unit invoke() {
         MorpheSettingsRuntime.setSdhCleanupMode(mode);
-        MorpheComposeToggleAction.pulseCapturedComposeState(refreshAction);
+        refreshSettingsPane();
         return Unit.INSTANCE;
     }
 }

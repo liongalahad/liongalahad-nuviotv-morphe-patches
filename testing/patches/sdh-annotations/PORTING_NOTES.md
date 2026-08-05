@@ -8,4 +8,4 @@ Deliberately omitted: SDH audit logs, track logs, playback-report DTOs, backend/
 
 The 0.8.1-beta R8 target is matched through the Media3 interface/callback shape and the settings resource/section-building sequence. Never widen a failed fingerprint. A new Nuvio version remains unsupported until isolated patching and every runtime gate pass.
 
-Nuvio's hidden `EXPERIENCE` destination already stays inside the Classic/TV detail pane. The patch exposes that destination and structurally discovers Nuvio's native setting renderer from the forced-subtitles row. It draws three mutually exclusive native switch rows in place. Do not restore a click interceptor or a separate Activity.
+Nuvio's hidden `EXPERIENCE` destination already stays inside the Classic/TV detail pane. The patch exposes that destination and reuses its native setting-card renderer for one `Remove SDH annotations` selector. The selector opens an in-window modal copied from Nuvio's Playback three-choice pattern; it must not become three switches or launch a separate Activity.

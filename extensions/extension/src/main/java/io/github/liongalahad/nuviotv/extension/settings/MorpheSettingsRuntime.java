@@ -1,10 +1,13 @@
 package io.github.liongalahad.nuviotv.extension.settings;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Bundle;
 
 import java.lang.reflect.Method;
+import java.lang.ref.WeakReference;
 
 /** Process-local bridge used by injected bytecode and Nuvio's native settings pane. */
 @SuppressWarnings({"unused", "JavaReflectionMemberAccess"})
@@ -18,6 +21,8 @@ public final class MorpheSettingsRuntime {
     public static final int SDH_MODE_REMOVE_LYRICS = 2;
 
     private static volatile Application application;
+    private static volatile WeakReference<Activity> resumedActivity = new WeakReference<>(null);
+    private static volatile boolean activityCallbacksRegistered;
     private static volatile SharedPreferences preferences;
     private static volatile int sdhCleanupMode = SDH_MODE_OFF;
     private static volatile boolean subtitlesExpanded;
@@ -31,7 +36,10 @@ public final class MorpheSettingsRuntime {
 
     public static void initialize(Context context) {
         Context appContext = context.getApplicationContext();
-        if (appContext instanceof Application) application = (Application) appContext;
+        if (appContext instanceof Application) {
+            application = (Application) appContext;
+            registerActivityCallbacks(application);
+        }
         if (preferences != null) return;
         synchronized (MorpheSettingsRuntime.class) {
             if (preferences != null) return;
@@ -122,12 +130,25 @@ public final class MorpheSettingsRuntime {
     public static String sdhModeDescription(int mode) {
         switch (sanitizeMode(mode)) {
             case SDH_MODE_KEEP_LYRICS:
-                return "Remove annotations and speaker labels while preserving likely song lyrics";
+                return "Remove annotations, sound descriptions and speaker labels while preserving likely song lyrics.";
             case SDH_MODE_REMOVE_LYRICS:
-                return "Also remove all text enclosed by music-note markers";
+                return "Also remove all text enclosed by normal or misdecoded music-note markers.";
             default:
-                return "Do not remove any subtitle text";
+                return "Do not remove any subtitle text.";
         }
+    }
+
+    public static String sdhDialogTitle() {
+        return "Remove SDH annotations";
+    }
+
+    public static String currentSdhModeTitle() {
+        return sdhModeTitle(sdhCleanupModeOrdinal());
+    }
+
+    static Activity resumedActivity() {
+        Activity activity = resumedActivity.get();
+        return activity != null && !activity.isFinishing() && !activity.isDestroyed() ? activity : null;
     }
 
     public static boolean isSubtitlesExpanded() {
@@ -184,6 +205,28 @@ public final class MorpheSettingsRuntime {
             return reflected;
         } catch (Throwable ignored) {
             return null;
+        }
+    }
+
+    private static void registerActivityCallbacks(Application app) {
+        if (activityCallbacksRegistered) return;
+        synchronized (MorpheSettingsRuntime.class) {
+            if (activityCallbacksRegistered) return;
+            app.registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
+                @Override public void onActivityCreated(Activity activity, Bundle state) {}
+                @Override public void onActivityStarted(Activity activity) {}
+                @Override public void onActivityResumed(Activity activity) {
+                    resumedActivity = new WeakReference<>(activity);
+                }
+                @Override public void onActivityPaused(Activity activity) {
+                    Activity current = resumedActivity.get();
+                    if (current == activity) resumedActivity = new WeakReference<>(null);
+                }
+                @Override public void onActivityStopped(Activity activity) {}
+                @Override public void onActivitySaveInstanceState(Activity activity, Bundle state) {}
+                @Override public void onActivityDestroyed(Activity activity) {}
+            });
+            activityCallbacksRegistered = true;
         }
     }
 }

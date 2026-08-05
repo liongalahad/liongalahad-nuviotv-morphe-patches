@@ -81,6 +81,8 @@ $needles = @(
     'Lio/github/liongalahad/nuviotv/extension/settings/MorpheSettingsRuntime;',
     'Lio/github/liongalahad/nuviotv/extension/settings/MorpheComposeToggleAction;',
     'Lio/github/liongalahad/nuviotv/extension/settings/MorpheComposeModeAction;',
+    'Lio/github/liongalahad/nuviotv/extension/settings/MorpheSdhModeDialogAction;',
+    'Lio/github/liongalahad/nuviotv/extension/settings/MorpheSdhModeDialog;',
     'Lio/github/liongalahad/nuviotv/extension/settings/MorpheSubtitlesExpandAction;',
     'Lio/github/liongalahad/nuviotv/extension/subtitles/sdh/SdhCleanupMode;',
     'Lio/github/liongalahad/nuviotv/extension/subtitles/sdh/SdhCueTransformer;',
