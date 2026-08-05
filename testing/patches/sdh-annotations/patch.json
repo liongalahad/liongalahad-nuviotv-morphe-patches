@@ -36,7 +36,9 @@
     "classes": [
       "io.github.liongalahad.nuviotv.extension.settings.MorpheSettingsRuntime",
       "io.github.liongalahad.nuviotv.extension.settings.MorpheComposeToggleAction",
+      "io.github.liongalahad.nuviotv.extension.settings.MorpheComposeModeAction",
       "io.github.liongalahad.nuviotv.extension.settings.MorpheSubtitlesExpandAction",
+      "io.github.liongalahad.nuviotv.extension.subtitles.sdh.SdhCleanupMode",
       "io.github.liongalahad.nuviotv.extension.subtitles.sdh.SdhCueTransformer"
     ]
   },
@@ -44,10 +46,12 @@
   "acceptance": [
     "Unpatched NuvioTV has no Morphe entry",
     "Patched NuvioTV shows Settings → Morphe → Subtitles",
-    "Subtitles expands in the existing pane and the row, focus outline, font, spacing, and switch match Nuvio's native Layout and Playback settings",
-    "Toggle defaults OFF and persists after force-stop and reboot",
-    "OFF preserves the full subtitle text",
-    "ON removes SDH annotations without losing dialogue, timing, styling, URLs, ratios, or non-text cues",
+    "Subtitles expands in the existing pane and all three rows, focus outlines, fonts, spacing, and switches match Nuvio's native Layout and Playback settings",
+    "Exactly one of Off, Remove SDH, keep lyrics, and Full cleanup is selected",
+    "Mode defaults to Off and persists after force-stop and reboot",
+    "Off preserves the full subtitle text",
+    "Remove SDH, keep lyrics removes annotations while preserving likely lyrics",
+    "Full cleanup also removes all text enclosed by normal or supported mojibake music-note markers",
     "No crash, ANR, VerifyError, or fatal log during launch, settings, playback, seeking, or track changes"
   ]
 }

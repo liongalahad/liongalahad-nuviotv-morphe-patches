@@ -4,7 +4,7 @@ Public Morphe patch source for the official NuvioTV Android application. The fir
 
 This repository distributes patch code and `.mpp` bundles. It never distributes original, patched, or modified NuvioTV APKs.
 
-The enabled patch applies explicitly documented aggressive text rules rather than an AI classifier. Read [exact SDH removal behavior and destructive limitations](docs/SDH_REMOVAL.md) before reporting a missed annotation.
+The patch provides `Off`, `Remove SDH, keep lyrics`, and `Full cleanup`. It applies explicitly documented text rules rather than an AI classifier. Read [exact SDH removal behavior and destructive limitations](docs/SDH_REMOVAL.md) before reporting a missed annotation.
 
 ## Install in Morphe Manager
 

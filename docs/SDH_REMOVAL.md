@@ -1,6 +1,6 @@
 # Remove SDH Annotations: exact behavior
 
-This page specifies what the production patch does. The enabled switch corresponds to the original NuvioTV SDH cleaner's `FULL` mode: it aggressively removes every complete supported bracketed or parenthetical block, regardless of the words inside it.
+This page specifies what the production patch does. It provides `Off`, `Remove SDH, keep lyrics`, and `Full cleanup`, matching the updated Nuvio SDH cleaner's `OFF`, `KEEP_LYRICS`, and `REMOVE_LYRICS` behavior.
 
 ## Scope and runtime flow
 
@@ -9,15 +9,15 @@ The patch supports only the official NuvioTV `0.8.1-beta` Media3/ExoPlayer subti
 When selected in Morphe, the patch:
 
 1. exposes Nuvio's hidden settings destination as `Settings → Morphe`;
-2. renders `Subtitles → Remove SDH Annotations` with Nuvio's native card and switch components;
-3. stores the switch in private `morphe_patches` preferences under `subtitles.remove_sdh_annotations`, defaulting to `false`;
+2. renders `Subtitles` with three mutually exclusive native rows: `Off`, `Remove SDH, keep lyrics`, and `Full cleanup`;
+3. stores the mode in private `morphe_patches` preferences under `subtitles.sdh_cleanup_mode`, defaulting to `OFF`;
 4. intercepts every outgoing Media3 cue list immediately before Nuvio constructs and forwards its `CueGroup`;
-5. returns the original cue list unchanged while the switch is OFF; and
-6. while ON, cleans text cues, suppresses cues that become empty, and leaves non-text cues unchanged.
+5. returns the original cue list unchanged in `Off`; and
+6. in either cleanup mode, cleans text cues, suppresses cues that become empty, and leaves non-text cues unchanged.
 
-The preference is checked for every outgoing cue list, so changes apply to the next subtitle update without restarting playback. The setting persists across process and device restarts and is not synchronized to a Nuvio account or sent to Nuvio's backend.
+The preference is checked for every outgoing cue list, so changes apply to the next subtitle update without restarting playback. The setting persists across process and device restarts and is not synchronized to a Nuvio account or sent to Nuvio's backend. A legacy dev.7 Boolean value of `true` migrates to `Remove SDH, keep lyrics`.
 
-## Exact removal rules while ON
+## Exact rules in both cleanup modes
 
 ### 1. Complete square-bracket blocks
 
@@ -78,7 +78,7 @@ Speaker-prefix safeguards preserve:
 
 If a recognized speaker prefix has no dialogue after it, the line is suppressed.
 
-### 4. Music-description cues
+### 4. Music-description cues and likely lyrics
 
 The cleaner recognizes both real `♪`/`♫` characters and the common CP1252/UTF-8 mojibake forms represented by `\u00E2\u2122\u00AA` or `\u00E2\u2122\u00AB`.
 
@@ -104,7 +104,15 @@ An empty body between markers is suppressed. A candidate containing one of these
 
 `i`, `i'm`, `i’m`, `me`, `my`, `mine`, `we`, `our`, `ours`, `you`, `your`, `yours`, `he`, `him`, `his`, `she`, `her`, `hers`, `they`, `them`, `their`, `this`, `that`, `who`, `what`, `where`, `when`, `why`, `how`, or `please`.
 
-This preserves the tested lyric `♪ Hello darkness, my old friend ♪`, but lyric-versus-description detection remains heuristic.
+In `Remove SDH, keep lyrics`, this preserves the tested lyric `♪ Hello darkness, my old friend ♪`, but lyric-versus-description detection remains heuristic.
+
+In `Full cleanup`, any complete cue that begins and ends with recognised normal or mojibake music-note markers is suppressed regardless of its contents. Any inline one-line segment of up to 80 characters enclosed by paired recognised markers is also removed regardless of its contents. An unmatched marker is preserved.
+
+Examples unique to `Full cleanup`:
+
+- `♪ when the music's over, turn on the light ♪` is suppressed;
+- `â™ª Hello darkness, my old friend â™ª` is suppressed; and
+- `Wait here. ♪ wordless singing ♪ Do not move.` becomes `Wait here. Do not move.`
 
 ### 5. Empty-result suppression and spacing
 
@@ -118,8 +126,8 @@ This preserves the tested lyric `♪ Hello darkness, my old friend ♪`, but lyr
 
 ## What is preserved
 
-- With the switch OFF, the original cue list and text objects are returned unchanged.
-- With the switch ON, text outside the removed ranges remains.
+- In `Off`, the original cue list and text objects are returned unchanged.
+- In either cleanup mode, text outside the removed ranges remains.
 - Android character spans attached to surviving text ranges remain.
 - Media3 cue timing, position, alignment, size, window/color data, and other cue properties remain.
 - Nuvio's original `CueGroup.presentationTimeUs` remains.
@@ -139,7 +147,7 @@ Supported blocks are removed aggressively, but these forms are not recognized:
 
 Complex speaker labels such as `MRS. BOWDEN:`, `MAN #1:`, labels longer than 32 characters, or labels with more than three words may survive.
 
-The aggressive rule also creates deliberate false positives: ordinary text in a supported complete bracket or parenthetical block is removed. Keep the switch OFF for subtitle tracks where brackets or parentheses contain dialogue that must be retained.
+The aggressive rule also creates deliberate false positives: ordinary text in a supported complete bracket or parenthetical block is removed. Keep the mode `Off` for subtitle tracks where brackets or parentheses contain dialogue that must be retained. `Full cleanup` deliberately removes lyrics enclosed by supported note markers.
 
 When reporting a remaining miss, include the exact raw subtitle text, including delimiters, capitalization, punctuation, and line breaks. Also record the subtitle language/track and confirm that playback uses Media3/ExoPlayer.
 

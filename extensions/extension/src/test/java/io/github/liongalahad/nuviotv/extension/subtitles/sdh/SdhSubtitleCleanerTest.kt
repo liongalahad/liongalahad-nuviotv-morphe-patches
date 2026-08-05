@@ -22,8 +22,8 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [35])
 class SdhSubtitleCleanerTest {
-    @Before fun resetPreference() = setEnabled(false)
-    @After fun cleanUpPreference() = setEnabled(false)
+    @Before fun resetPreference() = setMode(SdhCleanupMode.OFF)
+    @After fun cleanUpPreference() = setMode(SdhCleanupMode.OFF)
 
     @Test fun `default and off mode preserve source identity`() {
         val source: CharSequence = "[door closes] JOHN: Hello."
@@ -63,6 +63,29 @@ class SdhSubtitleCleanerTest {
         assertNull(SdhSubtitleCleaner.clean("♪ tense instrumental music ♪"))
         assertNull(SdhSubtitleCleaner.clean("♫ MUSIC PLAYING ♫"))
         assertEquals("♪ Hello darkness, my old friend ♪", cleaned("♪ Hello darkness, my old friend ♪"))
+    }
+
+    @Test fun `full cleanup removes note bounded lyrics and inline paired music`() {
+        assertNull(
+            SdhSubtitleCleaner.clean(
+                "♪ when the music's over, turn on the light ♪",
+                SdhCleanupMode.REMOVE_LYRICS
+            )
+        )
+        assertEquals(
+            "Wait here. Do not move.",
+            SdhSubtitleCleaner.clean(
+                "Wait here. ♪ wordless singing ♪ Do not move.",
+                SdhCleanupMode.REMOVE_LYRICS
+            )?.toString()
+        )
+        assertEquals(
+            "♪ This marker was never closed",
+            SdhSubtitleCleaner.clean(
+                "♪ This marker was never closed",
+                SdhCleanupMode.REMOVE_LYRICS
+            )?.toString()
+        )
     }
 
     @Test fun `mojibake music markers and multiline song descriptions are handled`() {
@@ -106,7 +129,7 @@ class SdhSubtitleCleanerTest {
     }
 
     @Test fun `cue positioning and non-text cues survive`() {
-        setEnabled(true)
+        setMode(SdhCleanupMode.KEEP_LYRICS)
         val dialogue = Cue.Builder().setText("[whispers] Hello.").setPosition(0.25f).build()
         val annotation = Cue.Builder().setText("[door closes]").build()
         val nonText = Cue.Builder().setBitmap(Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)).build()
@@ -120,7 +143,7 @@ class SdhSubtitleCleanerTest {
     @Test fun `preference changes apply to the next cue list and persist`() {
         val source = listOf(Cue.Builder().setText("[door closes]").build())
         assertEquals(1, SdhCueTransformer.clean(source).size)
-        setEnabled(true)
+        setMode(SdhCleanupMode.KEEP_LYRICS)
         assertEquals(0, SdhCueTransformer.clean(source).size)
         assertTrue(MorpheSettingsRuntime.isRemoveSdhEnabled())
     }
@@ -136,8 +159,11 @@ class SdhSubtitleCleanerTest {
         assertTrue(referencedTypes.none(forbidden::contains))
     }
 
-    private fun setEnabled(enabled: Boolean) {
-        MorpheSettingsRuntime.setRemoveSdhEnabled(ApplicationProvider.getApplicationContext(), enabled)
+    private fun setMode(mode: SdhCleanupMode) {
+        MorpheSettingsRuntime.setSdhCleanupMode(
+            ApplicationProvider.getApplicationContext(),
+            mode.ordinal
+        )
     }
 
     private fun cleaned(text: CharSequence): String? = SdhSubtitleCleaner.clean(text)?.toString()

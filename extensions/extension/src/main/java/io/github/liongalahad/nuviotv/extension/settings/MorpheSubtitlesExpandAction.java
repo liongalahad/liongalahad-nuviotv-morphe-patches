@@ -13,6 +13,7 @@ public final class MorpheSubtitlesExpandAction implements Function0<Unit> {
     }
 
     public static Function0<Unit> wrap(Function0<?> originalAction) {
+        MorpheComposeModeAction.captureRefreshAction(originalAction);
         return new MorpheSubtitlesExpandAction(originalAction);
     }
 

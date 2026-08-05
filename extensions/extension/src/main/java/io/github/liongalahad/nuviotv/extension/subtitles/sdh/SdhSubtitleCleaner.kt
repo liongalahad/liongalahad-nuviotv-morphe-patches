@@ -3,7 +3,7 @@ package io.github.liongalahad.nuviotv.extension.subtitles.sdh
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 
-/** Original FULL-mode SDH cleaner. The input is never mutated and surviving spans are retained. */
+/** SDH cleaner with lyric-preserving and full-cleanup modes. */
 object SdhSubtitleCleaner {
     private const val MUSIC_MARKER_REGEX =
         "(?:[\u266A\u266B]|\u00E2\u2122[\u00AA\u00AB])"
@@ -32,13 +32,18 @@ object SdhSubtitleCleaner {
     private val dialogueMarkers = setOf("-", "–", "—")
 
     @JvmStatic
-    fun clean(text: CharSequence): CharSequence? {
+    fun clean(
+        text: CharSequence,
+        mode: SdhCleanupMode = SdhCleanupMode.KEEP_LYRICS
+    ): CharSequence? {
+        if (mode == SdhCleanupMode.OFF) return text
         if (text.isEmpty()) return null
+        if (mode.removesMusicLyrics && isFullyMusicBoundedCue(text.toString())) return null
         if (isMusicOnlyCue(text.toString())) return null
         val lines = ArrayList<CharSequence>()
         var changed = false
         splitLines(text).forEach { line ->
-            val cleaned = cleanLine(line)
+            val cleaned = cleanLine(line, mode)
             if (cleaned == null) changed = true else {
                 if (cleaned.toString() != line.toString()) changed = true
                 lines += cleaned
@@ -49,7 +54,7 @@ object SdhSubtitleCleaner {
         return joinLines(lines, text is Spanned)
     }
 
-    private fun cleanLine(line: CharSequence): CharSequence? {
+    private fun cleanLine(line: CharSequence, mode: SdhCleanupMode): CharSequence? {
         val original = line.toString()
         if (original.isBlank() || isMusicOnlyLine(original)) return null
         val removals = ArrayList<IntRange>()
@@ -60,7 +65,9 @@ object SdhSubtitleCleaner {
             removals += extendLeadingSeparator(original, match.range)
         }
         pairedNotesPattern.findAll(original).forEach { match ->
-            if (isMusicDescription(match.groups[1]?.value.orEmpty())) removals += match.range
+            if (mode.removesMusicLyrics || isMusicDescription(match.groups[1]?.value.orEmpty())) {
+                removals += match.range
+            }
         }
 
         var current = removeRanges(line, removals)
@@ -97,6 +104,13 @@ object SdhSubtitleCleaner {
         if (trimmed.isEmpty()) return false
         if (!leadingNotesPattern.containsMatchIn(trimmed) && !trailingNotesPattern.containsMatchIn(trimmed)) return false
         return isMusicDescription(stripBoundaryMusicMarkers(trimmed))
+    }
+
+    private fun isFullyMusicBoundedCue(cue: String): Boolean {
+        val trimmed = cue.trim()
+        return trimmed.isNotEmpty() &&
+            leadingNotesPattern.containsMatchIn(trimmed) &&
+            trailingNotesPattern.containsMatchIn(trimmed)
     }
 
     private fun stripBoundaryMusicMarkers(value: String): String {
