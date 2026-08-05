@@ -18,6 +18,7 @@ import android.widget.TextView;
 
 /** View implementation matching Nuvio's RenderTypeSettingsItem choice dialog. */
 final class MorpheSdhModeDialog {
+    private static final int DIALOG_WIDTH_DP = 440;
     private static final int BACKGROUND_CARD = Color.rgb(35, 35, 35);
     private static final int SELECTED_BACKGROUND = Color.rgb(58, 58, 58);
     private static final int TEXT_PRIMARY = Color.rgb(245, 245, 245);
@@ -27,6 +28,11 @@ final class MorpheSdhModeDialog {
     private MorpheSdhModeDialog() {}
 
     static void show(Activity activity) {
+        Dialog dialog = create(activity);
+        dialog.show();
+    }
+
+    static Dialog create(Activity activity) {
         Dialog dialog = new Dialog(activity);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
@@ -34,7 +40,8 @@ final class MorpheSdhModeDialog {
         content.setOrientation(LinearLayout.VERTICAL);
         content.setPadding(dp(activity, 24), dp(activity, 24), dp(activity, 24), dp(activity, 24));
         content.setBackground(shape(BACKGROUND_CARD, dp(activity, 16), 0, 0));
-        content.setLayoutParams(new ViewGroup.LayoutParams(dp(activity, 440), ViewGroup.LayoutParams.WRAP_CONTENT));
+        content.setLayoutParams(new ViewGroup.LayoutParams(
+                dp(activity, DIALOG_WIDTH_DP), ViewGroup.LayoutParams.WRAP_CONTENT));
 
         TextView heading = text(activity, MorpheSettingsRuntime.sdhDialogTitle(), 24, TEXT_PRIMARY);
         heading.setTypeface(Typeface.DEFAULT, Typeface.NORMAL);
@@ -63,18 +70,14 @@ final class MorpheSdhModeDialog {
             window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             window.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
             WindowManager.LayoutParams attributes = window.getAttributes();
+            attributes.width = dp(activity, DIALOG_WIDTH_DP);
+            attributes.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+            attributes.gravity = Gravity.CENTER;
             attributes.dimAmount = 0.78f;
             window.setAttributes(attributes);
         }
-        ModeOptionView firstOption = first;
-        dialog.setOnShowListener(ignored -> {
-            Window shownWindow = dialog.getWindow();
-            if (shownWindow != null) {
-                shownWindow.setLayout(dp(activity, 440), ViewGroup.LayoutParams.WRAP_CONTENT);
-            }
-            if (firstOption != null) firstOption.requestFocus();
-        });
-        dialog.show();
+        if (first != null) first.requestFocus();
+        return dialog;
     }
 
     private static final class ModeOptionView extends LinearLayout {
