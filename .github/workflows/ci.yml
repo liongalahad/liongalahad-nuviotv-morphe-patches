@@ -18,11 +18,11 @@ jobs:
       matrix:
         target:
           - name: x86_64
-            url: https://github.com/NuvioMedia/NuvioTV/releases/download/0.8.1-beta/app-full-x86_64-release.apk
-            sha256: 9dd9256fe3070efc0e3254dff6969c4f8ff3d2b4921e3fe0695f8c64d8766c93
+            url: https://github.com/NuvioMedia/NuvioTV/releases/download/0.8.2-beta/app-full-x86_64-release.apk
+            sha256: 885c30945d91369969c633f7d0b3eb0816fc1db041af83459f1c7e842b9fbb8b
           - name: universal
-            url: https://github.com/NuvioMedia/NuvioTV/releases/download/0.8.1-beta/app-full-universal-release.apk
-            sha256: 11961657275fd3d3a57ae1235abad766f829e8f4bc3cda219c2e39c7ada4defd
+            url: https://github.com/NuvioMedia/NuvioTV/releases/download/0.8.2-beta/app-full-universal-release.apk
+            sha256: f3eec9367dabe332bb54d7ad73cc425296d22e1cbd9db699004d0c33f182c030
     env:
       GITHUB_ACTOR: liongalahad
       MORPHE_PACKAGES_TOKEN: ${{ secrets.MORPHE_PACKAGES_TOKEN }}
@@ -49,6 +49,7 @@ jobs:
           ./gradlew.bat generatePatchesList --no-daemon
           $list = Get-Content patches-list.json -Raw | ConvertFrom-Json
           if ($list.patches.name -notcontains 'Remove SDH Annotations') { throw 'Generated list is missing the SDH patch.' }
+          if ($list.patches.name -notcontains 'Rating Visibility') { throw 'Generated list is missing the ratings patch.' }
       - name: Download and verify official target
         shell: pwsh
         run: |
@@ -65,27 +66,41 @@ jobs:
           if (-not $bundle) { throw 'Runtime patch bundle was not produced.' }
           # FULL SDK verification reports false positives for optional classes
           # already absent from Nuvio; STRIP_SAFE has a Morphe 1.12.0 rebuild bug.
-          java -jar "$env:RUNNER_TEMP\morphe.jar" patch --patches $bundle --exclusive --enable 'Remove SDH Annotations' --unsigned --bytecode-mode STRIP_FAST --out "$env:RUNNER_TEMP\patched.apk" --result-file "$env:RUNNER_TEMP\result.json" "$env:RUNNER_TEMP\nuvio.apk"
-          if ($LASTEXITCODE -ne 0) { throw 'Isolated patching failed.' }
           $aapt = Get-ChildItem "$env:ANDROID_HOME\build-tools" -Recurse -Filter aapt2.exe | Sort-Object FullName -Descending | Select-Object -First 1
-          $manifest = (& $aapt.FullName dump xmltree --file AndroidManifest.xml "$env:RUNNER_TEMP\patched.apk") -join "`n"
-          foreach ($needle in @('MorpheInitProvider','nuviotv.settings.category.subtitles')) {
-            if ($manifest -notmatch $needle) { throw "Manifest inspection did not find $needle" }
-          }
           Add-Type -AssemblyName System.IO.Compression.FileSystem
-          $archive = [IO.Compression.ZipFile]::OpenRead("$env:RUNNER_TEMP\patched.apk")
-          try {
-            $dexText = ($archive.Entries | Where-Object Name -Match '^classes\d*\.dex$' | ForEach-Object {
-              $stream = $_.Open(); $memory = New-Object IO.MemoryStream
-              try { $stream.CopyTo($memory); [Text.Encoding]::ASCII.GetString($memory.ToArray()) } finally { $memory.Dispose(); $stream.Dispose() }
-            }) -join ''
-          } finally { $archive.Dispose() }
-          foreach ($needle in @('MorpheSettingsRuntime','MorpheComposeToggleAction','MorpheSubtitlesExpandAction','SdhCueTransformer','subtitles.remove_sdh_annotations','Landroidx/media3/common/text/CueGroup;')) {
-            if (-not $dexText.Contains($needle)) { throw "DEX inspection did not find $needle" }
+          $patchManifests = Get-ChildItem testing/patches -Recurse -Filter patch.json |
+            ForEach-Object { Get-Content $_.FullName -Raw | ConvertFrom-Json }
+          foreach ($patchManifest in $patchManifests) {
+            $output = "$env:RUNNER_TEMP\patched-$($patchManifest.id).apk"
+            $resultPath = "$env:RUNNER_TEMP\result-$($patchManifest.id).json"
+            java -jar "$env:RUNNER_TEMP\morphe.jar" patch --patches $bundle --exclusive --enable $patchManifest.name --unsigned --bytecode-mode STRIP_FAST --out $output --result-file $resultPath "$env:RUNNER_TEMP\nuvio.apk"
+            if ($LASTEXITCODE -ne 0) { throw "Isolated patching failed for $($patchManifest.name)." }
+
+            $manifestText = (& $aapt.FullName dump xmltree --file AndroidManifest.xml $output) -join "`n"
+            foreach ($needle in @($patchManifest.inspection.provider, $patchManifest.inspection.metadata)) {
+              if ($manifestText -notmatch [regex]::Escape($needle)) { throw "Manifest inspection did not find $needle" }
+            }
+
+            $archive = [IO.Compression.ZipFile]::OpenRead($output)
+            try {
+              $dexText = ($archive.Entries | Where-Object Name -Match '^classes\d*\.dex$' | ForEach-Object {
+                $stream = $_.Open(); $memory = New-Object IO.MemoryStream
+                try { $stream.CopyTo($memory); [Text.Encoding]::ASCII.GetString($memory.ToArray()) } finally { $memory.Dispose(); $stream.Dispose() }
+              }) -join ''
+            } finally { $archive.Dispose() }
+
+            $required = @($patchManifest.inspection.classes | ForEach-Object { 'L' + $_.Replace('.', '/') + ';' }) +
+              @($patchManifest.inspection.needles)
+            foreach ($needle in $required) {
+              if (-not $dexText.Contains($needle)) { throw "DEX inspection did not find $needle" }
+            }
+            foreach ($needle in @($patchManifest.inspection.forbiddenNeedles)) {
+              if ($dexText.Contains($needle)) { throw "DEX inspection found forbidden type $needle" }
+            }
+
+            $result = Get-Content $resultPath -Raw
+            if ($result -notmatch [regex]::Escape($patchManifest.name)) {
+              throw "Patch result does not identify $($patchManifest.name)."
+            }
           }
-          if ($dexText.Contains('Lcom/google/common/collect/ImmutableList;')) {
-            throw 'DEX inspection found a release-incompatible Guava descriptor.'
-          }
-          $result = Get-Content "$env:RUNNER_TEMP\result.json" -Raw
-          if ($result -notmatch 'Remove SDH Annotations') { throw 'Patch result does not identify the selected patch.' }
       # Patched and source APKs remain in RUNNER_TEMP and are never uploaded.

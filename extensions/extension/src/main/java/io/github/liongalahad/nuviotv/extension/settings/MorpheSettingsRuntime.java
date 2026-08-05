@@ -4,32 +4,56 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 
-import java.lang.reflect.Method;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /** Process-local bridge used by injected bytecode and Nuvio's native settings pane. */
 @SuppressWarnings({"unused", "JavaReflectionMemberAccess"})
 public final class MorpheSettingsRuntime {
     public static final String PREFERENCES_NAME = "morphe_patches";
     public static final String SDH_CLEANUP_MODE_KEY = "subtitles.sdh_cleanup_mode";
-    /** Legacy dev.7 Boolean, retained only for one-way preference migration. */
     public static final String REMOVE_SDH_KEY = "subtitles.remove_sdh_annotations";
+    public static final String OVERALL_RATINGS_KEY = "ratings.overall_visibility";
+    public static final String EPISODE_RATINGS_KEY = "ratings.episode_visibility";
+
     public static final int SDH_MODE_OFF = 0;
     public static final int SDH_MODE_KEEP_LYRICS = 1;
     public static final int SDH_MODE_REMOVE_LYRICS = 2;
+    public static final int EPISODE_RATINGS_SHOW = 0;
+    public static final int EPISODE_RATINGS_HIDE = 1;
+    public static final int EPISODE_RATINGS_HIDE_UNWATCHED = 2;
+
+    private static final int CATEGORY_NONE = 0;
+    private static final int CATEGORY_SUBTITLES = 1;
+    private static final int CATEGORY_RATINGS = 2;
+    private static final String SUBTITLES_METADATA =
+            "io.github.liongalahad.nuviotv.settings.category.subtitles";
+    private static final String RATINGS_METADATA =
+            "io.github.liongalahad.nuviotv.settings.category.ratings";
 
     private static volatile Application application;
     private static volatile WeakReference<Activity> resumedActivity = new WeakReference<>(null);
     private static volatile boolean activityCallbacksRegistered;
     private static volatile SharedPreferences preferences;
     private static volatile int sdhCleanupMode = SDH_MODE_OFF;
-    private static volatile boolean subtitlesExpanded;
+    private static volatile boolean overallRatingsShown = true;
+    private static volatile int episodeRatingsMode = EPISODE_RATINGS_SHOW;
+    private static volatile boolean subtitlesCategoryEnabled;
+    private static volatile boolean ratingsCategoryEnabled;
+    private static volatile int expandedCategory = CATEGORY_NONE;
 
     private MorpheSettingsRuntime() {}
 
-    /** Reuses Nuvio's hidden EXPERIENCE slot only inside its visibility filter. */
     public static int mapVisibilityOrdinal(int ordinal) {
         return ordinal == 0 ? 4 : ordinal;
     }
@@ -40,64 +64,212 @@ public final class MorpheSettingsRuntime {
             application = (Application) appContext;
             registerActivityCallbacks(application);
         }
+        readEnabledCategories(appContext);
         if (preferences != null) return;
         synchronized (MorpheSettingsRuntime.class) {
             if (preferences != null) return;
-            SharedPreferences prefs = context.getApplicationContext()
-                    .getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+            SharedPreferences prefs = appContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
             sdhCleanupMode = readSdhCleanupMode(prefs);
+            overallRatingsShown = readOverallRatingsShown(prefs);
+            episodeRatingsMode = readEpisodeRatingsMode(prefs);
             if (!prefs.contains(SDH_CLEANUP_MODE_KEY) && prefs.getBoolean(REMOVE_SDH_KEY, false)) {
                 prefs.edit().putString(SDH_CLEANUP_MODE_KEY, "KEEP_LYRICS").commit();
             }
             prefs.registerOnSharedPreferenceChangeListener((sharedPreferences, key) -> {
                 if (SDH_CLEANUP_MODE_KEY.equals(key)) {
                     sdhCleanupMode = readSdhCleanupMode(sharedPreferences);
+                } else if (OVERALL_RATINGS_KEY.equals(key)) {
+                    overallRatingsShown = readOverallRatingsShown(sharedPreferences);
+                } else if (EPISODE_RATINGS_KEY.equals(key)) {
+                    episodeRatingsMode = readEpisodeRatingsMode(sharedPreferences);
                 }
             });
             preferences = prefs;
         }
     }
 
-    /** Called once for every outgoing cue batch; state changes are immediately visible. */
-    public static boolean isRemoveSdhEnabled() {
-        if (preferences == null) {
-            Application application = currentApplication();
-            if (application != null) initialize(application);
+    public static String primaryCategoryTitle() {
+        return ratingsCategoryEnabled ? ratingsCategoryTitle() : subtitlesCategoryTitle();
+    }
+
+    public static String primaryCategoryDescription() {
+        return ratingsCategoryEnabled ? ratingsCategoryDescription() : subtitlesCategoryDescription();
+    }
+
+    public static String primaryCategoryStatus() {
+        int primary = ratingsCategoryEnabled ? CATEGORY_RATINGS : CATEGORY_SUBTITLES;
+        return expandedCategory == primary ? "Open" : "Closed";
+    }
+
+    public static void togglePrimaryCategory() {
+        toggleCategory(ratingsCategoryEnabled ? CATEGORY_RATINGS : CATEGORY_SUBTITLES);
+    }
+
+    public static boolean isPrimaryRatingsExpanded() {
+        return ratingsCategoryEnabled && expandedCategory == CATEGORY_RATINGS;
+    }
+
+    public static boolean isPrimarySubtitlesExpanded() {
+        return !ratingsCategoryEnabled && subtitlesCategoryEnabled && expandedCategory == CATEGORY_SUBTITLES;
+    }
+
+    public static boolean shouldRenderSecondarySubtitles() {
+        return ratingsCategoryEnabled && subtitlesCategoryEnabled;
+    }
+
+    public static String ratingsCategoryTitle() { return "Ratings"; }
+    public static String ratingsCategoryDescription() { return "Configure rating visibility"; }
+    public static String subtitlesCategoryTitle() { return "Subtitles"; }
+    public static String subtitlesCategoryDescription() { return "Configure subtitle patch settings"; }
+    public static String overallRatingsTitle() { return "Overall Ratings"; }
+    public static String overallRatingsDescription() {
+        return isOverallRatingsShown()
+                ? "Standard and TMDB ratings are shown."
+                : "Standard and TMDB ratings are Hidden. MDBList provider settings take priority on detail pages.";
+    }
+    public static String episodeRatingsTitle() { return "Episode Ratings"; }
+
+    public static boolean isOverallRatingsShown() {
+        ensureInitialized();
+        return overallRatingsShown;
+    }
+
+    public static String currentOverallRatingsTitle() {
+        return isOverallRatingsShown() ? "Show" : "Hide";
+    }
+
+    public static boolean toggleOverallRatings() {
+        ensureInitialized();
+        if (preferences == null) throw new IllegalStateException("Morphe settings were not initialized");
+        overallRatingsShown = !overallRatingsShown;
+        preferences.edit().putBoolean(OVERALL_RATINGS_KEY, overallRatingsShown).commit();
+        return overallRatingsShown;
+    }
+
+    public static void setOverallRatingsShown(boolean shown) {
+        ensureInitialized();
+        if (preferences == null) throw new IllegalStateException("Morphe settings were not initialized");
+        overallRatingsShown = shown;
+        preferences.edit().putBoolean(OVERALL_RATINGS_KEY, shown).commit();
+    }
+
+    public static int episodeRatingsModeOrdinal() {
+        ensureInitialized();
+        return episodeRatingsMode;
+    }
+
+    public static boolean isEpisodeRatingsModeSelected(int mode) {
+        return episodeRatingsModeOrdinal() == sanitizeEpisodeMode(mode);
+    }
+
+    public static void setEpisodeRatingsMode(int mode) {
+        ensureInitialized();
+        if (preferences == null) throw new IllegalStateException("Morphe settings were not initialized");
+        int sanitized = sanitizeEpisodeMode(mode);
+        episodeRatingsMode = sanitized;
+        preferences.edit().putString(EPISODE_RATINGS_KEY, storedEpisodeModeName(sanitized)).commit();
+    }
+
+    public static String episodeRatingsModeTitle(int mode) {
+        switch (sanitizeEpisodeMode(mode)) {
+            case EPISODE_RATINGS_HIDE: return "Hide";
+            case EPISODE_RATINGS_HIDE_UNWATCHED: return "Hide Unwatched";
+            default: return "Show";
         }
+    }
+
+    public static String episodeRatingsModeDescription(int mode) {
+        switch (sanitizeEpisodeMode(mode)) {
+            case EPISODE_RATINGS_HIDE: return "Do not show ratings on episodes or in the Ratings tab.";
+            case EPISODE_RATINGS_HIDE_UNWATCHED: return "Show ratings only for episodes marked as watched.";
+            default: return "Show all available episode ratings.";
+        }
+    }
+
+    public static String currentEpisodeRatingsTitle() {
+        return episodeRatingsModeTitle(episodeRatingsModeOrdinal());
+    }
+
+    public static boolean shouldHideOverallRating(boolean alreadyHidden) {
+        return alreadyHidden || !isOverallRatingsShown();
+    }
+
+    public static Float filterOverallRating(Float rating) {
+        return isOverallRatingsShown() ? rating : null;
+    }
+
+    public static Double filterEpisodeRating(Double rating, boolean watched) {
+        int mode = episodeRatingsModeOrdinal();
+        if (mode == EPISODE_RATINGS_HIDE) return null;
+        if (mode == EPISODE_RATINGS_HIDE_UNWATCHED && !watched) return null;
+        return rating;
+    }
+
+    public static Double filterEpisodeRating(Object watchProgress, Double rating, boolean markedWatched) {
+        return filterEpisodeRating(rating, markedWatched || isCompletedWatchProgress(watchProgress));
+    }
+
+    public static boolean shouldShowEpisodeRatingsSection() {
+        return episodeRatingsModeOrdinal() != EPISODE_RATINGS_HIDE;
+    }
+
+    public static boolean shouldShowEpisodeRatingsTab(boolean isTvShow) {
+        return isTvShow && shouldShowEpisodeRatingsSection();
+    }
+
+    public static List filterEpisodeRatingTabs(List tabs) {
+        if (tabs == null || episodeRatingsModeOrdinal() != EPISODE_RATINGS_HIDE) return tabs;
+        List visible = new ArrayList(tabs.size());
+        for (Object tab : tabs) {
+            if (!String.valueOf(tab).startsWith("PeopleTabItem(tab=RATINGS,")) visible.add(tab);
+        }
+        return visible;
+    }
+
+    /** Applies the PR's watched-episode policy to the data shared by the Ratings tab. */
+    public static Map filterEpisodeRatingsMap(Map ratings, Map progressByEpisode, Set watchedEpisodes) {
+        if (ratings == null || ratings.isEmpty()) return ratings;
+        int mode = episodeRatingsModeOrdinal();
+        if (mode == EPISODE_RATINGS_SHOW) return ratings;
+        if (mode == EPISODE_RATINGS_HIDE) return Collections.emptyMap();
+
+        Map visible = new LinkedHashMap();
+        for (Object entryObject : ratings.entrySet()) {
+            Map.Entry entry = (Map.Entry) entryObject;
+            Object episodeKey = entry.getKey();
+            boolean manuallyWatched = watchedEpisodes != null && watchedEpisodes.contains(episodeKey);
+            Object progress = progressByEpisode == null ? null : progressByEpisode.get(episodeKey);
+            if (manuallyWatched || isCompletedWatchProgress(progress)) {
+                visible.put(episodeKey, entry.getValue());
+            }
+        }
+        return visible;
+    }
+
+    public static boolean isRemoveSdhEnabled() {
+        ensureInitialized();
         return sdhCleanupMode != SDH_MODE_OFF;
     }
 
-    /** Backward-compatible test and migration API. */
     public static void setRemoveSdhEnabled(Context context, boolean enabled) {
         initialize(context);
         persistSdhCleanupMode(enabled ? SDH_MODE_KEEP_LYRICS : SDH_MODE_OFF);
     }
 
-    /** Toggles the preference synchronously and returns the new value. */
     public static boolean toggleRemoveSdhEnabled() {
-        if (preferences == null) {
-            Application current = currentApplication();
-            if (current != null) initialize(current);
-        }
-        if (preferences == null) {
-            throw new IllegalStateException("Morphe settings were not initialized");
-        }
+        ensureInitialized();
         boolean enabled = sdhCleanupMode == SDH_MODE_OFF;
         persistSdhCleanupMode(enabled ? SDH_MODE_KEEP_LYRICS : SDH_MODE_OFF);
         return enabled;
     }
 
-    /** Called once for every outgoing cue batch. */
     public static int sdhCleanupModeOrdinal() {
-        if (preferences == null) {
-            Application current = currentApplication();
-            if (current != null) initialize(current);
-        }
+        ensureInitialized();
         return sdhCleanupMode;
     }
 
     public static boolean isSdhModeSelected(int mode) {
-        return sdhCleanupModeOrdinal() == sanitizeMode(mode);
+        return sdhCleanupModeOrdinal() == sanitizeSdhMode(mode);
     }
 
     public static void setSdhCleanupMode(Context context, int mode) {
@@ -106,45 +278,30 @@ public final class MorpheSettingsRuntime {
     }
 
     public static void setSdhCleanupMode(int mode) {
-        if (preferences == null) {
-            Application current = currentApplication();
-            if (current != null) initialize(current);
-        }
-        if (preferences == null) {
-            throw new IllegalStateException("Morphe settings were not initialized");
-        }
+        ensureInitialized();
         persistSdhCleanupMode(mode);
     }
 
     public static String sdhModeTitle(int mode) {
-        switch (sanitizeMode(mode)) {
-            case SDH_MODE_KEEP_LYRICS:
-                return "Remove SDH, keep lyrics";
-            case SDH_MODE_REMOVE_LYRICS:
-                return "Full cleanup";
-            default:
-                return "Off";
+        switch (sanitizeSdhMode(mode)) {
+            case SDH_MODE_KEEP_LYRICS: return "Remove SDH, keep lyrics";
+            case SDH_MODE_REMOVE_LYRICS: return "Full cleanup";
+            default: return "Off";
         }
     }
 
     public static String sdhModeDescription(int mode) {
-        switch (sanitizeMode(mode)) {
+        switch (sanitizeSdhMode(mode)) {
             case SDH_MODE_KEEP_LYRICS:
                 return "Remove annotations, sound descriptions and speaker labels while preserving likely song lyrics.";
             case SDH_MODE_REMOVE_LYRICS:
                 return "Also remove all text enclosed by normal or misdecoded music-note markers.";
-            default:
-                return "Do not remove any subtitle text.";
+            default: return "Do not remove any subtitle text.";
         }
     }
 
-    public static String sdhDialogTitle() {
-        return "Remove SDH annotations";
-    }
-
-    public static String currentSdhModeTitle() {
-        return sdhModeTitle(sdhCleanupModeOrdinal());
-    }
+    public static String sdhDialogTitle() { return "Remove SDH annotations"; }
+    public static String currentSdhModeTitle() { return sdhModeTitle(sdhCleanupModeOrdinal()); }
 
     static Activity resumedActivity() {
         Activity activity = resumedActivity.get();
@@ -152,23 +309,27 @@ public final class MorpheSettingsRuntime {
     }
 
     public static boolean isSubtitlesExpanded() {
-        return subtitlesExpanded;
+        return expandedCategory == CATEGORY_SUBTITLES;
     }
 
     public static boolean toggleSubtitlesExpanded() {
-        subtitlesExpanded = !subtitlesExpanded;
-        return subtitlesExpanded;
+        toggleCategory(CATEGORY_SUBTITLES);
+        return isSubtitlesExpanded();
     }
 
     public static String subtitlesExpansionStatus() {
-        return subtitlesExpanded ? "Open" : "Closed";
+        return isSubtitlesExpanded() ? "Open" : "Closed";
+    }
+
+    private static void toggleCategory(int category) {
+        expandedCategory = expandedCategory == category ? CATEGORY_NONE : category;
     }
 
     private static void persistSdhCleanupMode(int mode) {
-        int sanitized = sanitizeMode(mode);
+        int sanitized = sanitizeSdhMode(mode);
         sdhCleanupMode = sanitized;
-        // The click must survive an immediate force-stop or device restart.
-        preferences.edit().putString(SDH_CLEANUP_MODE_KEY, storedModeName(sanitized)).commit();
+        if (preferences == null) throw new IllegalStateException("Morphe settings were not initialized");
+        preferences.edit().putString(SDH_CLEANUP_MODE_KEY, storedSdhModeName(sanitized)).commit();
     }
 
     private static int readSdhCleanupMode(SharedPreferences prefs) {
@@ -179,18 +340,79 @@ public final class MorpheSettingsRuntime {
         return SDH_MODE_OFF;
     }
 
-    private static int sanitizeMode(int mode) {
+    private static boolean readOverallRatingsShown(SharedPreferences prefs) {
+        if (!prefs.contains(OVERALL_RATINGS_KEY)) return true;
+        try { return prefs.getBoolean(OVERALL_RATINGS_KEY, true); }
+        catch (ClassCastException ignored) { return "SHOW".equals(prefs.getString(OVERALL_RATINGS_KEY, "SHOW")); }
+    }
+
+    private static int readEpisodeRatingsMode(SharedPreferences prefs) {
+        String stored;
+        try { stored = prefs.getString(EPISODE_RATINGS_KEY, null); }
+        catch (ClassCastException ignored) { return EPISODE_RATINGS_SHOW; }
+        if ("HIDE".equals(stored) || "HIDE_EPISODES".equals(stored) || "HIDE_ALL".equals(stored)) {
+            return EPISODE_RATINGS_HIDE;
+        }
+        if ("HIDE_UNWATCHED".equals(stored) || "HIDE_UNWATCHED_EPISODES".equals(stored)) {
+            return EPISODE_RATINGS_HIDE_UNWATCHED;
+        }
+        return EPISODE_RATINGS_SHOW;
+    }
+
+    private static int sanitizeSdhMode(int mode) {
         return mode >= SDH_MODE_OFF && mode <= SDH_MODE_REMOVE_LYRICS ? mode : SDH_MODE_OFF;
     }
 
-    private static String storedModeName(int mode) {
-        switch (sanitizeMode(mode)) {
-            case SDH_MODE_KEEP_LYRICS:
-                return "KEEP_LYRICS";
-            case SDH_MODE_REMOVE_LYRICS:
-                return "REMOVE_LYRICS";
-            default:
-                return "OFF";
+    private static int sanitizeEpisodeMode(int mode) {
+        return mode >= EPISODE_RATINGS_SHOW && mode <= EPISODE_RATINGS_HIDE_UNWATCHED
+                ? mode : EPISODE_RATINGS_SHOW;
+    }
+
+    private static String storedSdhModeName(int mode) {
+        switch (sanitizeSdhMode(mode)) {
+            case SDH_MODE_KEEP_LYRICS: return "KEEP_LYRICS";
+            case SDH_MODE_REMOVE_LYRICS: return "REMOVE_LYRICS";
+            default: return "OFF";
+        }
+    }
+
+    private static String storedEpisodeModeName(int mode) {
+        switch (sanitizeEpisodeMode(mode)) {
+            case EPISODE_RATINGS_HIDE: return "HIDE";
+            case EPISODE_RATINGS_HIDE_UNWATCHED: return "HIDE_UNWATCHED";
+            default: return "SHOW";
+        }
+    }
+
+    private static boolean isCompletedWatchProgress(Object watchProgress) {
+        if (watchProgress == null) return false;
+        try {
+            Method sourceGetter = watchProgress.getClass().getMethod("getSource");
+            String source = String.valueOf(sourceGetter.invoke(watchProgress));
+            float threshold = "simkl_playback".equals(source) ? 0.80f : 0.90f;
+            Method completion = watchProgress.getClass().getMethod("isCompleted", float.class);
+            return Boolean.TRUE.equals(completion.invoke(watchProgress, threshold));
+        } catch (Throwable ignored) {
+            return false;
+        }
+    }
+
+    private static void ensureInitialized() {
+        if (preferences != null) return;
+        Application current = currentApplication();
+        if (current != null) initialize(current);
+    }
+
+    private static void readEnabledCategories(Context context) {
+        try {
+            ApplicationInfo info = context.getPackageManager().getApplicationInfo(
+                    context.getPackageName(), PackageManager.GET_META_DATA);
+            Bundle metadata = info.metaData;
+            subtitlesCategoryEnabled = metadata != null && metadata.getBoolean(SUBTITLES_METADATA, false);
+            ratingsCategoryEnabled = metadata != null && metadata.getBoolean(RATINGS_METADATA, false);
+        } catch (Throwable ignored) {
+            subtitlesCategoryEnabled = false;
+            ratingsCategoryEnabled = false;
         }
     }
 
@@ -203,9 +425,7 @@ public final class MorpheSettingsRuntime {
             Application reflected = (Application) method.invoke(null);
             application = reflected;
             return reflected;
-        } catch (Throwable ignored) {
-            return null;
-        }
+        } catch (Throwable ignored) { return null; }
     }
 
     private static void registerActivityCallbacks(Application app) {
@@ -215,12 +435,9 @@ public final class MorpheSettingsRuntime {
             app.registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
                 @Override public void onActivityCreated(Activity activity, Bundle state) {}
                 @Override public void onActivityStarted(Activity activity) {}
-                @Override public void onActivityResumed(Activity activity) {
-                    resumedActivity = new WeakReference<>(activity);
-                }
+                @Override public void onActivityResumed(Activity activity) { resumedActivity = new WeakReference<>(activity); }
                 @Override public void onActivityPaused(Activity activity) {
-                    Activity current = resumedActivity.get();
-                    if (current == activity) resumedActivity = new WeakReference<>(null);
+                    if (resumedActivity.get() == activity) resumedActivity = new WeakReference<>(null);
                 }
                 @Override public void onActivityStopped(Activity activity) {}
                 @Override public void onActivitySaveInstanceState(Activity activity, Bundle state) {}

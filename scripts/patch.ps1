@@ -77,19 +77,10 @@ if ($aapt) {
 }
 
 Add-Type -AssemblyName System.IO.Compression.FileSystem
-$needles = @(
-    'Lio/github/liongalahad/nuviotv/extension/settings/MorpheSettingsRuntime;',
-    'Lio/github/liongalahad/nuviotv/extension/settings/MorpheComposeToggleAction;',
-    'Lio/github/liongalahad/nuviotv/extension/settings/MorpheComposeModeAction;',
-    'Lio/github/liongalahad/nuviotv/extension/settings/MorpheSdhModeDialogAction;',
-    'Lio/github/liongalahad/nuviotv/extension/settings/MorpheSdhModeDialog;',
-    'Lio/github/liongalahad/nuviotv/extension/settings/MorpheSubtitlesExpandAction;',
-    'Lio/github/liongalahad/nuviotv/extension/subtitles/sdh/SdhCleanupMode;',
-    'Lio/github/liongalahad/nuviotv/extension/subtitles/sdh/SdhCueTransformer;',
-    'subtitles.sdh_cleanup_mode',
-    'Landroidx/media3/common/text/CueGroup;'
-)
-$forbiddenNeedles = @('Lcom/google/common/collect/ImmutableList;')
+$needles = @($manifest.inspection.classes | ForEach-Object {
+    'L' + ($_.Replace('.', '/')) + ';'
+}) + @($manifest.inspection.needles)
+$forbiddenNeedles = @($manifest.inspection.forbiddenNeedles)
 $found = @{}
 ($needles + $forbiddenNeedles) | ForEach-Object { $found[$_] = $false }
 $archive = [IO.Compression.ZipFile]::OpenRead($output)

@@ -6,25 +6,25 @@
   "target": {
     "application": "NuvioTV",
     "package": "com.nuvio.tv",
-    "versions": ["0.8.1-beta"],
+    "versions": ["0.8.2-beta"],
     "launchComponent": "com.nuvio.tv/.MainActivity"
   },
   "assets": {
     "universal": {
-      "url": "https://github.com/NuvioMedia/NuvioTV/releases/download/0.8.1-beta/app-full-universal-release.apk",
-      "sha256": "11961657275fd3d3a57ae1235abad766f829e8f4bc3cda219c2e39c7ada4defd"
+      "url": "https://github.com/NuvioMedia/NuvioTV/releases/download/0.8.2-beta/app-full-universal-release.apk",
+      "sha256": "f3eec9367dabe332bb54d7ad73cc425296d22e1cbd9db699004d0c33f182c030"
     },
     "x86_64": {
-      "url": "https://github.com/NuvioMedia/NuvioTV/releases/download/0.8.1-beta/app-full-x86_64-release.apk",
-      "sha256": "9dd9256fe3070efc0e3254dff6969c4f8ff3d2b4921e3fe0695f8c64d8766c93"
+      "url": "https://github.com/NuvioMedia/NuvioTV/releases/download/0.8.2-beta/app-full-x86_64-release.apk",
+      "sha256": "885c30945d91369969c633f7d0b3eb0816fc1db041af83459f1c7e842b9fbb8b"
     },
     "arm64-v8a": {
-      "url": "https://github.com/NuvioMedia/NuvioTV/releases/download/0.8.1-beta/app-full-arm64-v8a-release.apk",
-      "sha256": "dfd7a756c48d22694c63e6ee853b3111651d93140c518fc478fce15ee4ae51b0"
+      "url": "https://github.com/NuvioMedia/NuvioTV/releases/download/0.8.2-beta/app-full-arm64-v8a-release.apk",
+      "sha256": "f4e69b1d0136835635c2e44a939b160a7f5900c93dbf246d2e7eb9de713741fe"
     },
     "armeabi-v7a": {
-      "url": "https://github.com/NuvioMedia/NuvioTV/releases/download/0.8.1-beta/app-full-armeabi-v7a-release.apk",
-      "sha256": "5dadf7cefd795352e271ed46dc1cb5cf32328e84e63254bef5dfde3c2670b30b"
+      "url": "https://github.com/NuvioMedia/NuvioTV/releases/download/0.8.2-beta/app-full-armeabi-v7a-release.apk",
+      "sha256": "c9086031e18946ad29f22bbe7e9018743dfae000822c05222c86f5947c2ac5e3"
     }
   },
   "dependencies": ["settings-hub"],
@@ -35,6 +35,7 @@
     "metadata": "io.github.liongalahad.nuviotv.settings.category.subtitles",
     "classes": [
       "io.github.liongalahad.nuviotv.extension.settings.MorpheSettingsRuntime",
+      "io.github.liongalahad.nuviotv.extension.settings.MorphePrimaryCategoryAction",
       "io.github.liongalahad.nuviotv.extension.settings.MorpheComposeToggleAction",
       "io.github.liongalahad.nuviotv.extension.settings.MorpheComposeModeAction",
       "io.github.liongalahad.nuviotv.extension.settings.MorpheSdhModeDialogAction",
@@ -42,7 +43,12 @@
       "io.github.liongalahad.nuviotv.extension.settings.MorpheSubtitlesExpandAction",
       "io.github.liongalahad.nuviotv.extension.subtitles.sdh.SdhCleanupMode",
       "io.github.liongalahad.nuviotv.extension.subtitles.sdh.SdhCueTransformer"
-    ]
+    ],
+    "needles": [
+      "subtitles.sdh_cleanup_mode",
+      "Landroidx/media3/common/text/CueGroup;"
+    ],
+    "forbiddenNeedles": ["Lcom/google/common/collect/ImmutableList;"]
   },
   "focusedTests": ["SdhSubtitleCleanerTest", "isolated x86_64 and universal exclusive-mode application", "manifest and injected-class inspection"],
   "acceptance": [

@@ -17,10 +17,14 @@ public final class MorpheSubtitlesExpandAction implements Function0<Unit> {
         return new MorpheSubtitlesExpandAction(originalAction);
     }
 
+    public static Function0<Unit> create() {
+        return new MorpheSubtitlesExpandAction(null);
+    }
+
     @Override
     public Unit invoke() {
         MorpheSettingsRuntime.toggleSubtitlesExpanded();
-        MorpheComposeToggleAction.pulseCapturedComposeState(originalAction);
+        MorpheComposeModeAction.refreshSettingsPane();
         return Unit.INSTANCE;
     }
 }

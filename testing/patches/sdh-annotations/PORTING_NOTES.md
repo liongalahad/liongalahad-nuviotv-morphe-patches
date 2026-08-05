@@ -6,6 +6,6 @@ The three modes map to the updated source implementation's `OFF`, `KEEP_LYRICS`,
 
 Deliberately omitted: SDH audit logs, track logs, playback-report DTOs, backend/reporting changes, and Nuvio profile synchronization.
 
-The 0.8.1-beta R8 target is matched through the Media3 interface/callback shape and the settings resource/section-building sequence. Never widen a failed fingerprint. A new Nuvio version remains unsupported until isolated patching and every runtime gate pass.
+The 0.8.2-beta R8 target is matched through the Media3 interface/callback shape and the settings resource/section-building sequence. Never widen a failed fingerprint. A new Nuvio version remains unsupported until isolated patching and every runtime gate pass.
 
 Nuvio's hidden `EXPERIENCE` destination already stays inside the Classic/TV detail pane. The patch exposes that destination and reuses its native setting-card renderer for one `Remove SDH annotations` selector. The selector opens an in-window modal copied from Nuvio's Playback three-choice pattern; it must not become three switches or launch a separate Activity.

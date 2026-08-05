@@ -1,6 +1,6 @@
 # NuvioTV Morphe Patches
 
-Public Morphe patch source for the official NuvioTV Android application. The first patch is `Remove SDH Annotations`, supported only for `com.nuvio.tv` `0.8.1-beta` on the Media3/ExoPlayer subtitle path.
+Public Morphe patch source for the official NuvioTV Android application. The current patches target only `com.nuvio.tv` `0.8.2-beta`; subtitle cleanup supports the Media3/ExoPlayer path.
 
 This repository distributes patch code and `.mpp` bundles. It never distributes original, patched, or modified NuvioTV APKs.
 
@@ -13,8 +13,8 @@ The patch provides `Off`, `Remove SDH, keep lyrics`, and `Full cleanup`. It appl
 
 1. Add `liongalahad/nuviotv-morphe-patches` as a GitHub patch source. No GitHub PAT is required because the repository is public.
 2. Enable prerelease patches while the bundle remains on `dev`.
-3. Import the official NuvioTV `0.8.1-beta` APK for the target ABI, or the official universal APK.
-4. Select only `Remove SDH Annotations`. Use the dedicated local test signing identity for repeatable test upgrades.
+3. Import the official NuvioTV `0.8.2-beta` APK for the target ABI, or the official universal APK.
+4. Select the patch to test. Use the dedicated local test signing identity for repeatable test upgrades.
 5. Install on the dedicated TV test profile. The official app cannot be upgraded in place because the patched APK has a different signature.
 
 Deep link: `https://morphe.software/add-source?github=liongalahad/nuviotv-morphe-patches`
@@ -41,7 +41,7 @@ Every run is isolated under `local/patches/<patch-id>/<timestamp>/`. See [Window
 
 **🎯 Supported versions:**
 
-| 0.8.1-beta |
+| 0.8.2-beta |
 | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
