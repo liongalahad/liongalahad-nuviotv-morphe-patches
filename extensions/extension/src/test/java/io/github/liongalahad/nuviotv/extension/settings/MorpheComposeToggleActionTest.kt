@@ -45,12 +45,14 @@ class MorpheComposeToggleActionTest {
     }
 
     @Test
-    fun `native action toggles preference and pulses captured compose state`() {
+    fun `native mode action selects exact mode and pulses captured compose state`() {
         val state = FakeComposeState()
-        val action = MorpheComposeToggleAction.wrap(CapturedAction(state))
+        MorpheSubtitlesExpandAction.wrap(CapturedAction(state))
+        val action = MorpheComposeModeAction.forMode(MorpheSettingsRuntime.SDH_MODE_REMOVE_LYRICS)
 
         action.invoke()
 
+        assertEquals(MorpheSettingsRuntime.SDH_MODE_REMOVE_LYRICS, MorpheSettingsRuntime.sdhCleanupModeOrdinal())
         assertTrue(MorpheSettingsRuntime.isRemoveSdhEnabled())
         assertEquals(listOf(true, false), state.writes)
         assertFalse(state.getValue() as Boolean)
@@ -69,12 +71,13 @@ class MorpheComposeToggleActionTest {
     }
 
     @Test
-    fun `toggle action reaches compose state through submenu wrapper`() {
+    fun `mode action reaches compose state captured by submenu wrapper`() {
         val state = FakeComposeState()
-        val submenu = MorpheSubtitlesExpandAction.wrap(CapturedAction(state))
+        MorpheSubtitlesExpandAction.wrap(CapturedAction(state))
 
-        MorpheComposeToggleAction.wrap(submenu).invoke()
+        MorpheComposeModeAction.forMode(MorpheSettingsRuntime.SDH_MODE_KEEP_LYRICS).invoke()
 
+        assertEquals(MorpheSettingsRuntime.SDH_MODE_KEEP_LYRICS, MorpheSettingsRuntime.sdhCleanupModeOrdinal())
         assertTrue(MorpheSettingsRuntime.isRemoveSdhEnabled())
         assertEquals(listOf(true, false), state.writes)
     }

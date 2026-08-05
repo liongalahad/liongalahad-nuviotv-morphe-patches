@@ -7,11 +7,12 @@ import io.github.liongalahad.nuviotv.extension.settings.MorpheSettingsRuntime
 object SdhCueTransformer {
     @JvmStatic
     fun clean(cues: List<Cue>): List<Cue> {
-        if (!MorpheSettingsRuntime.isRemoveSdhEnabled()) return cues
-        return cleanCues(cues)
+        val mode = SdhCleanupMode.fromOrdinal(MorpheSettingsRuntime.sdhCleanupModeOrdinal())
+        if (mode == SdhCleanupMode.OFF) return cues
+        return cleanCues(cues, mode)
     }
 
-    internal fun cleanCues(cues: List<Cue>): List<Cue> {
+    internal fun cleanCues(cues: List<Cue>, mode: SdhCleanupMode): List<Cue> {
         var changed = false
         val output = ArrayList<Cue>(cues.size)
         cues.forEach { cue ->
@@ -19,7 +20,7 @@ object SdhCueTransformer {
             if (source == null) {
                 output += cue
             } else {
-                val cleaned = SdhSubtitleCleaner.clean(source)
+                val cleaned = SdhSubtitleCleaner.clean(source, mode)
                 when {
                     cleaned == null -> changed = true
                     cleaned === source -> output += cue

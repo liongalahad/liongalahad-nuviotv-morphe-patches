@@ -26,4 +26,4 @@
 
 ## SDH sample assertions
 
-With the toggle OFF, use the exact source text. With it ON, verify every supported complete square-bracket and parenthetical block disappears, along with recognized speaker labels and music descriptions. Verify that text outside those blocks, times, URLs, ratios, punctuation, cue timing/position, non-text cues, and surviving spans remain. Ordinary text inside supported brackets or parentheses is deliberately removed by FULL mode. Repeat after seeking and changing subtitle tracks. Search logcat for crashes, ANRs, `VerifyError`, and fatal entries.
+With `Off`, use the exact source text. With `Remove SDH, keep lyrics`, verify supported bracket/parenthetical blocks, speaker labels, and music descriptions disappear while likely lyrics remain. With `Full cleanup`, verify complete normal and mojibake note-bounded lyrics and inline paired-note segments also disappear. In both cleanup modes, verify outside text, times, URLs, ratios, punctuation, cue timing/position, non-text cues, and surviving spans remain. Repeat after seeking and changing tracks; verify exactly one mode remains selected after force-stop and reboot.

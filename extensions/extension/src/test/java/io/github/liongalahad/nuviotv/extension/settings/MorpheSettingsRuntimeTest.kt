@@ -3,6 +3,7 @@ package io.github.liongalahad.nuviotv.extension.settings
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -29,10 +30,22 @@ class MorpheSettingsRuntimeTest {
     }
 
     @Test
-    fun `toggle commits and returns the new value`() {
-        assertTrue(MorpheSettingsRuntime.toggleRemoveSdhEnabled())
+    fun `three modes commit synchronously and expose exact labels`() {
+        assertEquals("Off", MorpheSettingsRuntime.sdhModeTitle(0))
+        assertEquals("Remove SDH, keep lyrics", MorpheSettingsRuntime.sdhModeTitle(1))
+        assertEquals("Full cleanup", MorpheSettingsRuntime.sdhModeTitle(2))
+
+        MorpheSettingsRuntime.setSdhCleanupMode(application, 1)
+        assertEquals(1, MorpheSettingsRuntime.sdhCleanupModeOrdinal())
+        assertTrue(MorpheSettingsRuntime.isSdhModeSelected(1))
+        assertFalse(MorpheSettingsRuntime.isSdhModeSelected(2))
+
+        MorpheSettingsRuntime.setSdhCleanupMode(application, 2)
+        assertEquals(2, MorpheSettingsRuntime.sdhCleanupModeOrdinal())
         assertTrue(MorpheSettingsRuntime.isRemoveSdhEnabled())
-        assertFalse(MorpheSettingsRuntime.toggleRemoveSdhEnabled())
+
+        MorpheSettingsRuntime.setSdhCleanupMode(application, 99)
+        assertEquals(0, MorpheSettingsRuntime.sdhCleanupModeOrdinal())
         assertFalse(MorpheSettingsRuntime.isRemoveSdhEnabled())
     }
 }

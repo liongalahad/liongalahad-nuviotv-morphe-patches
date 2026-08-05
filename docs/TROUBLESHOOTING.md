@@ -24,6 +24,6 @@ Run `bootstrap.ps1`, then verify `adb devices`, `emulator -list-avds`, and `emul
 
 Confirm the public repository is reachable, the release contains a compatible `.mpp` and patch list, and Manager is using the intended prerelease/stable channel. A PAT is not required for this source.
 
-## Toggle does not update playback
+## SDH mode does not update playback
 
 Confirm playback uses Media3/ExoPlayer, not MPV/libass. Check manifest metadata, the `morphe_patches` preference key, cue-hook inspection, and logcat. Each new `CueGroup` reads the current cached state; a restart should not be required.
