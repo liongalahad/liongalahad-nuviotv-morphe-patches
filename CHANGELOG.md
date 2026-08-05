@@ -1,3 +1,9 @@
+## [1.0.0-dev.11](https://github.com/liongalahad/nuviotv-morphe-patches/compare/v1.0.0-dev.10...v1.0.0-dev.11) (2026-08-05)
+
+### ✨ New Features
+
+* support NuvioTV 0.8.2 and rating controls ([8eefa2c](https://github.com/liongalahad/nuviotv-morphe-patches/commit/8eefa2ce0ef0a3ae8f568cb29dfe8b4a6591f5bc))
+
 ## [1.0.0-dev.10](https://github.com/liongalahad/nuviotv-morphe-patches/compare/v1.0.0-dev.9...v1.0.0-dev.10) (2026-08-05)
 
 ### 🐛 Bug Fixes

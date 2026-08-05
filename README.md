@@ -34,9 +34,9 @@ Every run is isolated under `local/patches/<patch-id>/<timestamp>/`. See [Window
 ## Available patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.0.0-dev.10](https://github.com/liongalahad/nuviotv-morphe-patches/releases/tag/v1.0.0-dev.10)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;1 patches total
+> **[v1.0.0-dev.11](https://github.com/liongalahad/nuviotv-morphe-patches/releases/tag/v1.0.0-dev.11)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;2 patches total
 <details open>
-<summary>📦 NuvioTV&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
+<summary>📦 NuvioTV&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
 <br>
 
 **🎯 Supported versions:**
@@ -46,6 +46,7 @@ Every run is isolated under `local/patches/<patch-id>/<timestamp>/`. See [Window
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
+| [Rating Visibility](#rating-visibility) | Adds Settings > Morphe > Ratings with independent overall and episode rating controls. |  |
 | [Remove SDH Annotations](#remove-sdh-annotations) | Adds Settings → Morphe → Subtitles and removes SDH annotations from Media3 subtitles when enabled. |  |
 
 </details>
