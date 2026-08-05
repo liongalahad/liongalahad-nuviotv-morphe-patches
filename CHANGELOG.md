@@ -1,3 +1,9 @@
+## [1.0.0-dev.10](https://github.com/liongalahad/nuviotv-morphe-patches/compare/v1.0.0-dev.9...v1.0.0-dev.10) (2026-08-05)
+
+### 🐛 Bug Fixes
+
+* stabilize SDH dialog position ([2de520b](https://github.com/liongalahad/nuviotv-morphe-patches/commit/2de520b650a2066fd4f63225d5e4ad31b60de2c4))
+
 ## [1.0.0-dev.9](https://github.com/liongalahad/nuviotv-morphe-patches/compare/v1.0.0-dev.8...v1.0.0-dev.9) (2026-08-05)
 
 ### ✨ New Features
