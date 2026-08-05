@@ -22,7 +22,9 @@ jobs:
           fetch-tags: true
 
       - name: Refresh release tags
-        run: git fetch --force --tags origin
+        run: |
+          git fetch --force --tags origin
+          git fetch --force origin '+refs/notes/*:refs/notes/*'
 
       - name: Setup Java
         uses: actions/setup-java@v5
