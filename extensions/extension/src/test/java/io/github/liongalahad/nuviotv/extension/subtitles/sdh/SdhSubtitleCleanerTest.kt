@@ -99,6 +99,15 @@ class SdhSubtitleCleanerTest {
         assertNull(SdhSubtitleCleaner.clean("$corruptedNote Julee Cruise's\n\"Falling\" playing $corruptedNote"))
     }
 
+    @Test fun `Twin Peaks music description is removed at the cue callback boundary`() {
+        setMode(SdhCleanupMode.REMOVE_LYRICS)
+        val corruptedNote = "\u00E2\u2122\u00AA"
+        val cues = listOf(
+            Cue.Builder().setText("$corruptedNote atmospheric music $corruptedNote").build()
+        )
+        assertTrue(SdhCueTransformer.clean(cues).isEmpty())
+    }
+
     @Test fun `times urls ratios punctuation and dialogue markers survive`() {
         listOf(
             "The rule is: never look back.",

@@ -19,6 +19,6 @@ Each choice writes private `morphe_patches` storage synchronously, closes the mo
 
 ## SDH hook
 
-The Media3 hook targets Nuvio's `TextOutput` wrapper structurally: `CueGroup` input, reconstruction with the original `presentationTimeUs`, and forwarding to `TextOutput`. Each outgoing group rechecks the current cached preference. Text cues are copied only when changed; timing, positioning, surviving spans, non-text cues, and styling are retained. Empty cleaned cues are suppressed.
+The Media3 hook targets Nuvio's `TextOutput` wrapper structurally. It cleans the list extracted at the start of every `CueGroup` callback and, only when that list changes, rebuilds the incoming group with the original `presentationTimeUs` before either of Nuvio's forwarding branches can run. The legacy list callback is filtered at method entry. Each outgoing group rechecks the current cached preference. Text cues are copied only when changed; timing, positioning, surviving spans, non-text cues, and styling are retained. Empty cleaned cues are suppressed.
 
 MPV/libass is explicitly deferred.
