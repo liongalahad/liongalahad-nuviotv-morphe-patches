@@ -34,6 +34,16 @@ class MorpheSettingsRuntimeTest {
         assertEquals("Off", MorpheSettingsRuntime.sdhModeTitle(0))
         assertEquals("Remove SDH, keep lyrics", MorpheSettingsRuntime.sdhModeTitle(1))
         assertEquals("Full cleanup", MorpheSettingsRuntime.sdhModeTitle(2))
+        assertEquals("Remove SDH annotations", MorpheSettingsRuntime.sdhDialogTitle())
+        assertEquals("Do not remove any subtitle text.", MorpheSettingsRuntime.sdhModeDescription(0))
+        assertEquals(
+            "Remove annotations, sound descriptions and speaker labels while preserving likely song lyrics.",
+            MorpheSettingsRuntime.sdhModeDescription(1)
+        )
+        assertEquals(
+            "Also remove all text enclosed by normal or misdecoded music-note markers.",
+            MorpheSettingsRuntime.sdhModeDescription(2)
+        )
 
         MorpheSettingsRuntime.setSdhCleanupMode(application, 1)
         assertEquals(1, MorpheSettingsRuntime.sdhCleanupModeOrdinal())
@@ -42,6 +52,7 @@ class MorpheSettingsRuntimeTest {
 
         MorpheSettingsRuntime.setSdhCleanupMode(application, 2)
         assertEquals(2, MorpheSettingsRuntime.sdhCleanupModeOrdinal())
+        assertEquals("Full cleanup", MorpheSettingsRuntime.currentSdhModeTitle())
         assertTrue(MorpheSettingsRuntime.isRemoveSdhEnabled())
 
         MorpheSettingsRuntime.setSdhCleanupMode(application, 99)

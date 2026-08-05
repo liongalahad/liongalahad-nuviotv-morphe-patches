@@ -9,11 +9,12 @@ The patch supports only the official NuvioTV `0.8.1-beta` Media3/ExoPlayer subti
 When selected in Morphe, the patch:
 
 1. exposes Nuvio's hidden settings destination as `Settings → Morphe`;
-2. renders `Subtitles` with three mutually exclusive native rows: `Off`, `Remove SDH, keep lyrics`, and `Full cleanup`;
-3. stores the mode in private `morphe_patches` preferences under `subtitles.sdh_cleanup_mode`, defaulting to `OFF`;
-4. intercepts every outgoing Media3 cue list immediately before Nuvio constructs and forwards its `CueGroup`;
-5. returns the original cue list unchanged in `Off`; and
-6. in either cleanup mode, cleans text cues, suppresses cues that become empty, and leaves non-text cues unchanged.
+2. renders one native `Remove SDH annotations` selector row showing the current value;
+3. opens Nuvio's three-choice modal pattern containing `Off`, `Remove SDH, keep lyrics`, and `Full cleanup`;
+4. stores the mode in private `morphe_patches` preferences under `subtitles.sdh_cleanup_mode`, defaulting to `OFF`;
+5. intercepts every outgoing Media3 cue list immediately before Nuvio constructs and forwards its `CueGroup`;
+6. returns the original cue list unchanged in `Off`; and
+7. in either cleanup mode, cleans text cues, suppresses cues that become empty, and leaves non-text cues unchanged.
 
 The preference is checked for every outgoing cue list, so changes apply to the next subtitle update without restarting playback. The setting persists across process and device restarts and is not synchronized to a Nuvio account or sent to Nuvio's backend. A legacy dev.7 Boolean value of `true` migrates to `Remove SDH, keep lyrics`.
 

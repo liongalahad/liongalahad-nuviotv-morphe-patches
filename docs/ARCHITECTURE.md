@@ -13,9 +13,9 @@ The repository's concrete package root is `io.github.liongalahad.nuviotv`; the l
 
 ## Shared settings hub
 
-The internal settings-hub resource patch injects one initialization provider and one metadata registration. On 0.8.1-beta, Nuvio already compiles a hidden `EXPERIENCE` settings section. The patch changes its label to `Morphe`, maps that slot to a visible branch inside the exact settings filter, and converts its native mode card into an inline `Subtitles` compartment. Expanding that card draws `Off`, `Remove SDH, keep lyrics`, and `Full cleanup` with Nuvio's native setting renderer. Navigation remains inside Nuvio's existing Settings pane and inherits its typography, focus treatment, spacing, colors, and switch styling.
+The internal settings-hub resource patch injects one initialization provider and one metadata registration. On 0.8.1-beta, Nuvio already compiles a hidden `EXPERIENCE` settings section. The patch changes its label to `Morphe`, maps that slot to a visible branch inside the exact settings filter, and converts its native mode card into an inline `Subtitles` compartment. Expanding that card draws one native `Remove SDH annotations` selector row with the current value beneath it. Activating the row opens the same three-choice modal pattern used by Nuvio's Playback settings. Navigation remains in the current Settings window and inherits Nuvio's typography, focus treatment, spacing, colors, selector-card styling, and D-pad behavior.
 
-Each mode action writes private `morphe_patches` storage synchronously and pulses the pane's captured Compose state so all three rows redraw immediately. The legacy dev.7 Boolean migrates to `Remove SDH, keep lyrics`. Preferences never enter Nuvio profiles, account sync, telemetry, playback reports, or backend DTOs.
+Each choice writes private `morphe_patches` storage synchronously, closes the modal, and redraws the selector subtitle immediately. The legacy dev.7 Boolean migrates to `Remove SDH, keep lyrics`. Preferences never enter Nuvio profiles, account sync, telemetry, playback reports, or backend DTOs.
 
 ## SDH hook
 
