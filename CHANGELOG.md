@@ -1,3 +1,9 @@
+## [1.0.0-dev.13](https://github.com/liongalahad/nuviotv-morphe-patches/compare/v1.0.0-dev.12...v1.0.0-dev.13) (2026-08-05)
+
+### 🐛 Bug Fixes
+
+* intercept all Media3 subtitle cue groups ([c471059](https://github.com/liongalahad/nuviotv-morphe-patches/commit/c471059fa5db240437172799b41ed39b64f527f9))
+
 ## [1.0.0-dev.12](https://github.com/liongalahad/nuviotv-morphe-patches/compare/v1.0.0-dev.11...v1.0.0-dev.12) (2026-08-05)
 
 ### 🐛 Bug Fixes
