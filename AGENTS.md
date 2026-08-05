@@ -11,3 +11,4 @@
 - Add unit, isolated application, post-patch inspection, TV AVD, and real-TV acceptance coverage for every behavior change.
 - Use conventional commits. Work on `dev`; merge to protected `main` without squashing.
 - A stable release requires a committed real-TV validation report. Never mark unchecked manual tests as passed.
+- Perform every GitHub mutation as the `liongalahad` account; never use `gm-hera`. Before committing or pushing, verify the repository-local Git identity is `liongalahad <145302945+liongalahad@users.noreply.github.com>` and the authenticated GitHub account is `liongalahad`.
