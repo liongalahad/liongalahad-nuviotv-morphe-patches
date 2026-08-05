@@ -1,3 +1,13 @@
+## [1.0.0-dev.8](https://github.com/liongalahad/nuviotv-patches/compare/v1.0.0-dev.7...v1.0.0-dev.8) (2026-08-05)
+
+### 🐛 Bug Fixes
+
+* use Nuvio SDH choice dialog ([e9a9f85](https://github.com/liongalahad/nuviotv-patches/commit/e9a9f855bef80389d9663959f43b182f0103861c))
+
+### ✨ New Features
+
+* add three SDH cleanup modes ([9711232](https://github.com/liongalahad/nuviotv-patches/commit/971123200995d196e92e8f4ca4743840fe3b0972))
+
 ## [1.0.0-dev.7](https://github.com/liongalahad/nuviotv-patches/compare/v1.0.0-dev.6...v1.0.0-dev.7) (2026-08-04)
 
 ### 🐛 Bug Fixes

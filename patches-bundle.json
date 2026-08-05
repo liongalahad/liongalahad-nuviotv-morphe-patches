@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-08-04T23:49:52",
-  "description": "## [1.0.0-dev.7](https://github.com/liongalahad/nuviotv-patches/compare/v1.0.0-dev.6...v1.0.0-dev.7) (2026-08-04)\n\n### 🐛 Bug Fixes\n\n* restore full SDH annotation removal ([b498bf4](https://github.com/liongalahad/nuviotv-patches/commit/b498bf4a1292ddf9b6cace3ef9bc1611b21592ce))",
-  "download_url": "https://github.com/liongalahad/nuviotv-patches/releases/download/v1.0.0-dev.7/patches-1.0.0-dev.7.mpp",
+  "created_at": "2026-08-05T00:59:33",
+  "description": "## [1.0.0-dev.8](https://github.com/liongalahad/nuviotv-patches/compare/v1.0.0-dev.7...v1.0.0-dev.8) (2026-08-05)\n\n### 🐛 Bug Fixes\n\n* use Nuvio SDH choice dialog ([e9a9f85](https://github.com/liongalahad/nuviotv-patches/commit/e9a9f855bef80389d9663959f43b182f0103861c))\n\n### ✨ New Features\n\n* add three SDH cleanup modes ([9711232](https://github.com/liongalahad/nuviotv-patches/commit/971123200995d196e92e8f4ca4743840fe3b0972))",
+  "download_url": "https://github.com/liongalahad/nuviotv-patches/releases/download/v1.0.0-dev.8/patches-1.0.0-dev.8.mpp",
   "signature_download_url": "",
-  "version": "1.0.0-dev.7"
+  "version": "1.0.0-dev.8"
 }
