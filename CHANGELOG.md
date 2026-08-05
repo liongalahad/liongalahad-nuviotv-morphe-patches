@@ -1,3 +1,9 @@
+## [1.0.0-dev.9](https://github.com/liongalahad/nuviotv-morphe-patches/compare/v1.0.0-dev.8...v1.0.0-dev.9) (2026-08-05)
+
+### ✨ New Features
+
+* rebrand source and add prerelease warning ([ddd9428](https://github.com/liongalahad/nuviotv-morphe-patches/commit/ddd9428f7febce0112c919beff399e50df560d1e))
+
 ## [1.0.0-dev.8](https://github.com/liongalahad/nuviotv-patches/compare/v1.0.0-dev.7...v1.0.0-dev.8) (2026-08-05)
 
 ### 🐛 Bug Fixes
