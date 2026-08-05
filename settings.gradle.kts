@@ -1,4 +1,4 @@
-rootProject.name = "nuviotv-patches"
+rootProject.name = "nuviotv-morphe-patches"
 
 pluginManagement {
     System.getenv("MORPHE_GRADLE_PLUGIN_SRC")?.let { localPlugin ->

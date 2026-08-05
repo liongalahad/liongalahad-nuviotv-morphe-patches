@@ -2,12 +2,12 @@ group = "io.github.liongalahad.nuviotv"
 
 patches {
     about {
-        name = "NuvioTV Patches"
+        name = "NuvioTV Morphe Patches"
         description = "Morphe patches for the official NuvioTV Android application"
-        source = "https://github.com/liongalahad/nuviotv-patches"
+        source = "https://github.com/liongalahad/nuviotv-morphe-patches"
         author = "liongalahad"
-        contact = "https://github.com/liongalahad/nuviotv-patches/issues"
-        website = "https://github.com/liongalahad/nuviotv-patches"
+        contact = "https://github.com/liongalahad/nuviotv-morphe-patches/issues"
+        website = "https://github.com/liongalahad/nuviotv-morphe-patches"
         license = "GPLv3"
     }
 }
