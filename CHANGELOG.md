@@ -1,3 +1,24 @@
+## 1.0.0-dev.1 (2026-08-05)
+
+### 🐛 Bug Fixes
+
+* fetch release tags before semantic-release ([7e151f7](https://github.com/liongalahad/nuviotv-morphe-patches/commit/7e151f72a7786484912d049014080f1950ab87c3))
+* integrate native Morphe subtitle settings ([32bf4e5](https://github.com/liongalahad/nuviotv-morphe-patches/commit/32bf4e52b4d8b9d9c210c14e0a65b0a1302e4c6c))
+* make local Morphe builds reproducible ([095187b](https://github.com/liongalahad/nuviotv-morphe-patches/commit/095187b6515af1a49963b226892c0767ffcaa23c))
+* open Morphe settings from TV rail ([3e5197a](https://github.com/liongalahad/nuviotv-morphe-patches/commit/3e5197a9d148810d2907d15ede1d477c545384c6))
+* restore full SDH annotation removal ([2a572f7](https://github.com/liongalahad/nuviotv-morphe-patches/commit/2a572f78642e4122ec21445e12191bb410bc92f2))
+* select runtime patch bundle in CI ([673597e](https://github.com/liongalahad/nuviotv-morphe-patches/commit/673597e246478d60a1789efda3818c788f300fcb))
+* stabilize SDH dialog position ([586c8ef](https://github.com/liongalahad/nuviotv-morphe-patches/commit/586c8ef346e926e5adec53d900c45511b596d0ec))
+* use Nuvio SDH choice dialog ([f42d651](https://github.com/liongalahad/nuviotv-morphe-patches/commit/f42d651d662161c5077e5796c53ba1600f512fc6))
+
+### ✨ New Features
+
+* add isolated NuvioTV SDH patch workflow ([4a65b30](https://github.com/liongalahad/nuviotv-morphe-patches/commit/4a65b308788a3cc5907a9cba8456115a2344e063))
+* add three SDH cleanup modes ([0977187](https://github.com/liongalahad/nuviotv-morphe-patches/commit/09771872838970c17b7565eca455de1443b4562f))
+* rebrand source and add prerelease warning ([8a8ba31](https://github.com/liongalahad/nuviotv-morphe-patches/commit/8a8ba313b18f48feb74c7773bb910ca02c8c925a))
+* support NuvioTV 0.8.2 and rating controls ([3906485](https://github.com/liongalahad/nuviotv-morphe-patches/commit/39064855736aa1f633f1760a131e6943d9392e2a))
+* support official universal APK ([af0ae27](https://github.com/liongalahad/nuviotv-morphe-patches/commit/af0ae27a864b6914e4ec5c9fd9a1d1751e6d370f))
+
 ## [1.0.0-dev.11](https://github.com/liongalahad/nuviotv-morphe-patches/compare/v1.0.0-dev.10...v1.0.0-dev.11) (2026-08-05)
 
 ### ✨ New Features
