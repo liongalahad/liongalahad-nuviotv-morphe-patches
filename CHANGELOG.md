@@ -1,3 +1,13 @@
+## [1.0.0-dev.15](https://github.com/liongalahad/nuviotv-morphe-patches/compare/v1.0.0-dev.14...v1.0.0-dev.15) (2026-08-07)
+
+### 🐛 Bug Fixes
+
+* **playback:** add binge group manual fallback ([d95e919](https://github.com/liongalahad/nuviotv-morphe-patches/commit/d95e919ae96273f6f05a41bc5229d2abc650d595))
+
+### ✨ New Features
+
+* **detail:** add random episode patch ([5040790](https://github.com/liongalahad/nuviotv-morphe-patches/commit/50407900cc6a0de7d8ddc586bf1840613dcc2723))
+
 ## [1.0.0-dev.14](https://github.com/liongalahad/nuviotv-morphe-patches/compare/v1.0.0-dev.13...v1.0.0-dev.14) (2026-08-06)
 
 ### ✨ New Features
