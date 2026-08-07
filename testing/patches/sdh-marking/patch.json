@@ -32,10 +32,12 @@
   "fingerprints": ["TrackInfoConstructorFingerprint", "SubtitleOptionBuilderFingerprint", "SubtitleOptionContentFingerprint"],
   "inspection": {
     "provider": "io.github.liongalahad.nuviotv.extension.settings.MorpheInitProvider",
-    "metadata": "io.github.liongalahad.nuviotv.settings.feature.mark_sdh",
+    "metadata": "io.github.liongalahad.nuviotv.settings.provider.mark_sdh_subtitles",
     "classes": [
       "io.github.liongalahad.nuviotv.extension.subtitles.sdhmarking.SdhSubtitleDetector",
       "io.github.liongalahad.nuviotv.extension.subtitles.sdhmarking.SdhSubtitleMarker",
+      "io.github.liongalahad.nuviotv.extension.subtitles.sdhmarking.SdhMarkingSettingsCategory",
+      "io.github.liongalahad.nuviotv.extension.subtitles.sdhmarking.SdhMarkingSettingsContent",
       "io.github.liongalahad.nuviotv.extension.settings.MorpheSdhMarkingToggleAction"
     ],
     "needles": ["subtitles.mark_sdh", "Mark SDH subtitles"],
