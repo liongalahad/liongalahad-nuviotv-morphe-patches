@@ -46,11 +46,11 @@ Every run is isolated under `local/patches/<patch-id>/<timestamp>/`. See [Window
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
-| [Binge Group Manual Fallback](#binge-group-manual-fallback) | Adds Morphe > Playback control to open the source picker when no preferred binge-group stream is found. |  |
-| [Mark SDH Subtitles](#mark-sdh-subtitles) | Marks detected English SDH tracks in embedded and addon subtitle lists. |  |
 | [Random Episode](#random-episode) | Adds Morphe > Detail Page > Show Random Episode Button and random series playback. |  |
+| [Binge Group Manual Fallback](#binge-group-manual-fallback) | Adds Morphe > Playback control to open the source picker when no preferred binge-group stream is found. |  |
 | [Rating Visibility](#rating-visibility) | Adds Settings > Morphe > Ratings with independent overall and episode rating controls. |  |
 | [Remove SDH Annotations](#remove-sdh-annotations) | Adds Settings → Morphe → Subtitles and removes SDH annotations from Media3 subtitles when enabled. |  |
+| [Mark SDH Subtitles](#mark-sdh-subtitles) | Marks detected English SDH tracks in embedded and addon subtitle lists. |  |
 
 </details>
 

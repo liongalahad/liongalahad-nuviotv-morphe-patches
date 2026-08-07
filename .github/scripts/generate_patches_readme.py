@@ -78,13 +78,25 @@ def anchor(name):
     return re.sub(r"-+", "-", re.sub(r"[^a-z0-9]+", "-", name.lower())).strip("-")
 
 
+APP_PATCH_ORDER = {
+    "Random Episode": 100,
+    "Binge Group Manual Fallback": 200,
+    "Rating Visibility": 300,
+    "Remove SDH Annotations": 400,
+    "Mark SDH Subtitles": 500,
+}
+
+
 def patches_table(patches):
-    """Render a sorted markdown table of patches with name, description, and options."""
+    """Render patches in the same order as the all-patches Morphe settings screen."""
     rows = [
         "| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |",
         "|----------|----------------|-----------|",
     ]
-    for p in sorted(patches, key=lambda x: x["name"]):
+    for p in sorted(
+        patches,
+        key=lambda x: (APP_PATCH_ORDER.get(x["name"], 10_000), x["name"]),
+    ):
         a = anchor(p["name"])
         options = p.get("options") or []
         if options:
