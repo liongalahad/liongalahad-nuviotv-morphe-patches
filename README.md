@@ -34,7 +34,7 @@ Every run is isolated under `local/patches/<patch-id>/<timestamp>/`. See [Window
 ## Available patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.0.0-dev.15](https://github.com/liongalahad/nuviotv-morphe-patches/releases/tag/v1.0.0-dev.15)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;6 patches total
+> **[v1.0.0-dev.16](https://github.com/liongalahad/nuviotv-morphe-patches/releases/tag/v1.0.0-dev.16)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;6 patches total
 <details open>
 <summary>📦 NuvioTV&nbsp;&nbsp;•&nbsp;&nbsp;6 patches</summary>
 <br>
@@ -46,12 +46,12 @@ Every run is isolated under `local/patches/<patch-id>/<timestamp>/`. See [Window
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
-| [Random Episode](#random-episode) | Adds Morphe > Detail Page > Show Random Episode Button and random series playback. Original idea and code by [**DeclanSC**](https://github.com/DeclanSC). |  |
+| [Random Episode](#random-episode) | Adds Morphe > Detail Page > Show Random Episode Button and random series playback.<br>Original idea and code by [**DeclanSC**](https://github.com/DeclanSC). |  |
 | [Binge Group Manual Fallback](#binge-group-manual-fallback) | Adds Morphe > Playback control to open the source picker when no preferred binge-group stream is found. |  |
 | [Rating Visibility](#rating-visibility) | Adds Settings > Morphe > Ratings with independent overall and episode rating controls. |  |
 | [Remove SDH Annotations](#remove-sdh-annotations) | Adds Settings → Morphe → Subtitles and removes SDH annotations from Media3 subtitles when enabled. |  |
 | [Mark SDH Subtitles](#mark-sdh-subtitles) | Marks explicitly labelled SDH tracks and detected English SDH subtitle files. |  |
-| [Allow Importing Subs from Local Storage](#allow-importing-subs-from-local-storage) | Adds Local Storage to the ExoPlayer subtitle menu, imports device files, and restores them per movie or episode. |  |
+| [Allow Importing Subs from Local Storage](#allow-importing-subs-from-local-storage) | Adds Local Storage to Nuvio's ExoPlayer subtitle menu and imports subtitle files from the device. |  |
 
 </details>
 
