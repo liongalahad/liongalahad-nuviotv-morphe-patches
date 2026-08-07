@@ -45,7 +45,7 @@ private val sdhMarkingResourcePatch = resourcePatch {
 @Suppress("unused")
 val sdhmarkingPatch = bytecodePatch(
     name = "Mark SDH Subtitles",
-    description = "Marks detected English SDH tracks in embedded and addon subtitle lists.",
+    description = "Marks explicitly labelled SDH tracks and detected English SDH subtitle files.",
     default = false
 ) {
     compatibleWith(NUVIO_COMPATIBILITY)
