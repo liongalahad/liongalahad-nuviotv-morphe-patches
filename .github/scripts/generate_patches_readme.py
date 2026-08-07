@@ -86,6 +86,10 @@ APP_PATCH_ORDER = {
     "Mark SDH Subtitles": 500,
 }
 
+PATCH_CREDITS = {
+    "Random Episode": "Original idea and code by [**DeclanSC**](https://github.com/DeclanSC).",
+}
+
 
 def patches_table(patches):
     """Render patches in the same order as the all-patches Morphe settings screen."""
@@ -106,6 +110,9 @@ def patches_table(patches):
         else:
             opts_cell = ""
         desc = (p.get("description") or "").replace("\n", "<br>")
+        credit = PATCH_CREDITS.get(p["name"])
+        if credit:
+            desc = f"{desc}<br>{credit}"
         rows.append(f"| [{p['name']}](#{a}) | {desc} | {opts_cell} |")
     return "\n".join(rows)
 

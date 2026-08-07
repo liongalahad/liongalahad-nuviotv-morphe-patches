@@ -46,7 +46,7 @@ Every run is isolated under `local/patches/<patch-id>/<timestamp>/`. See [Window
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
-| [Random Episode](#random-episode) | Adds Morphe > Detail Page > Show Random Episode Button and random series playback. |  |
+| [Random Episode](#random-episode) | Adds Morphe > Detail Page > Show Random Episode Button and random series playback.<br>Original idea and code by [**DeclanSC**](https://github.com/DeclanSC). |  |
 | [Binge Group Manual Fallback](#binge-group-manual-fallback) | Adds Morphe > Playback control to open the source picker when no preferred binge-group stream is found. |  |
 | [Rating Visibility](#rating-visibility) | Adds Settings > Morphe > Ratings with independent overall and episode rating controls. |  |
 | [Remove SDH Annotations](#remove-sdh-annotations) | Adds Settings → Morphe → Subtitles and removes SDH annotations from Media3 subtitles when enabled. |  |
