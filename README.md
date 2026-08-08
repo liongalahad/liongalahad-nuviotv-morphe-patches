@@ -11,7 +11,7 @@ The patch provides `Off`, `Remove SDH, keep lyrics`, and `Full cleanup`. It appl
 
 ## Install in Morphe Manager
 
-1. Downlaod and install Morphe Manager on hour phone or TV https://morphe.software/
+1. Downlaod and install Morphe Manager on your phone or TV https://morphe.software/
 2. Add `liongalahad/nuviotv-morphe-patches` as a GitHub patch source. No GitHub PAT is required because the repository is public.
 3. Enable prerelease patches while the bundle remains on `dev`.
 4. Import the official NuvioTV `0.8.2-beta` APK for the target ABI, or the official universal APK.
