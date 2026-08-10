@@ -1,5 +1,6 @@
 package io.github.liongalahad.nuviotv.extension.settings;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
@@ -11,6 +12,7 @@ import kotlin.jvm.functions.Function3;
 /** Shared renderer for every control placed inside a Morphe settings category. */
 final class MorpheSettingsRows {
     private static final String NATIVE_SETTINGS_CLASS = "sa.ic";
+    private static final int NATIVE_CATEGORY_LIST_DEFAULT_MASK = 510 & ~16;
 
     private static volatile Method nativeCardMethod;
     private static volatile Method nativeSwitchMethod;
@@ -21,6 +23,7 @@ final class MorpheSettingsRows {
     private static volatile Method mutableStateFactoryMethod;
     private static volatile Method composerShouldComposeMethod;
     private static volatile Method composerSkipMethod;
+    private static volatile Object nativeCategoryArrangement;
 
     private MorpheSettingsRows() {}
 
@@ -166,10 +169,14 @@ final class MorpheSettingsRows {
             Method method = nativeLazyColumnMethod;
             if (method == null) {
                 Class<?> lazyColumnClass = Class.forName("a.a", false, composer.getClass().getClassLoader());
+                Class<?> verticalArrangementClass = Class.forName(
+                        "c0.i", false, composer.getClass().getClassLoader()
+                );
                 for (Method candidate : lazyColumnClass.getDeclaredMethods()) {
                     Class<?>[] parameters = candidate.getParameterTypes();
                     if (Modifier.isStatic(candidate.getModifiers()) &&
                             candidate.getReturnType() == Void.TYPE && parameters.length == 12 &&
+                            parameters[3] == verticalArrangementClass &&
                             Function1.class.isAssignableFrom(parameters[8]) &&
                             parameters[10] == Integer.TYPE && parameters[11] == Integer.TYPE) {
                         candidate.setAccessible(true);
@@ -180,15 +187,20 @@ final class MorpheSettingsRows {
                 if (method == null) throw new NoSuchMethodException("Native LazyColumn");
                 nativeLazyColumnMethod = method;
             }
-            // All layout parameters except the modifier and item content use the same
-            // defaults as Nuvio's Layout Settings LazyColumn.
+            Object arrangement = nativeCategoryArrangement(composer, method.getParameterTypes()[3]);
+            // Nuvio's Layout Settings category list uses the medium spacing token as an
+            // explicit vertical arrangement. Keep every other optional parameter native-defaulted.
             method.invoke(
-                    null, modifier, null, null, null, null, null, false, null,
-                    content, composer, 0, 510
+                    null, modifier, null, null, arrangement, null, null, false, null,
+                    content, composer, 0, NATIVE_CATEGORY_LIST_DEFAULT_MASK
             );
         } catch (ReflectiveOperationException error) {
             throw new IllegalStateException("Unable to render the native Morphe category list", error);
         }
+    }
+
+    static int categoryListDefaultMaskForTesting() {
+        return NATIVE_CATEGORY_LIST_DEFAULT_MASK;
     }
 
     static void lazyItem(Object lazyListScope, Object key, Function3<Object, Object, Object, Unit> content) {
@@ -299,6 +311,46 @@ final class MorpheSettingsRows {
             composableLambdaFactoryMethod = method;
         }
         return method.invoke(null, key, content, composer);
+    }
+
+    private static Object nativeCategoryArrangement(Object composer, Class<?> expectedType)
+            throws ReflectiveOperationException {
+        Object cached = nativeCategoryArrangement;
+        if (cached != null) return cached;
+
+        ClassLoader loader = composer.getClass().getClassLoader();
+        Class<?> spacingHolder = Class.forName("va.m0", false, loader);
+        Class<?> spacingTokens = Class.forName("va.n0", false, loader);
+        Field tokenField = null;
+        for (Field candidate : spacingHolder.getDeclaredFields()) {
+            if (Modifier.isStatic(candidate.getModifiers()) && candidate.getType() == spacingTokens) {
+                candidate.setAccessible(true);
+                tokenField = candidate;
+                break;
+            }
+        }
+        if (tokenField == null) throw new NoSuchFieldException("Native Nuvio spacing tokens");
+        Object tokens = tokenField.get(null);
+        Method mediumSpacing = spacingTokens.getDeclaredMethod("c");
+        mediumSpacing.setAccessible(true);
+        float spacing = ((Number) mediumSpacing.invoke(tokens)).floatValue();
+
+        Class<?> arrangementHelpers = Class.forName("c0.j", false, loader);
+        Method factory = null;
+        for (Method candidate : arrangementHelpers.getDeclaredMethods()) {
+            Class<?>[] parameters = candidate.getParameterTypes();
+            if (Modifier.isStatic(candidate.getModifiers()) && parameters.length == 1 &&
+                    parameters[0] == Float.TYPE &&
+                    expectedType.isAssignableFrom(candidate.getReturnType())) {
+                candidate.setAccessible(true);
+                factory = candidate;
+                break;
+            }
+        }
+        if (factory == null) throw new NoSuchMethodException("Native spaced category arrangement");
+        Object arrangement = factory.invoke(null, spacing);
+        nativeCategoryArrangement = arrangement;
+        return arrangement;
     }
 
     private static Method findNativeMethod(Object composer, boolean switchRow)

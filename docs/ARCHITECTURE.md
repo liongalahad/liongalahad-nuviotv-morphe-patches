@@ -21,7 +21,7 @@ Each choice writes private `morphe_patches` storage synchronously, closes the mo
 
 The shared settings hub owns the complete Morphe pane skeleton. Individual patches only register category/feature metadata and provide their setting behavior; they must not patch the main Settings screen or create their own container geometry.
 
-- Morphe uses the same structure as Layout Settings: one native weighted settings-group panel, one native `LazyColumn`, and one native collapsible-section item per category. The native components own each header, description, Open/Closed state, focus treatment, inner padding, row spacing, expansion, and scrolling.
+- Morphe uses the same structure as Layout Settings: one native weighted settings-group panel, one native `LazyColumn`, and one native collapsible-section item per category. The category list explicitly reuses Nuvio's medium vertical spacing token, while the native components own each header, description, Open/Closed state, focus treatment, inner padding, row spacing, expansion, and scrolling.
 - Horizontal group geometry is invariant: opening or closing any category must not change the left edge, right edge, or horizontal padding of another category. Descriptions are never hidden, focus outlines are never clipped, and the hub must not introduce custom overlap, compact padding, fixed-height clipping, or a second expansion implementation.
 - Switches and selector rows go through `MorpheSettingsRows`; category renderers declare rows but do not reimplement reflection, modifiers, spacing, or Compose entry/skip handling.
 - A feature added to an existing category registers feature metadata and joins that category renderer. A new category must be added once to the shared hub/runtime, not injected independently.
