@@ -20,7 +20,6 @@ import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -77,6 +76,9 @@ public final class LocalSubtitleRuntime {
     private static volatile boolean suppressNextTransientDismiss;
     private static volatile String activeContentKey;
     private static volatile String activeImportedUrl;
+    private static volatile WeakReference<Object> restoredController = new WeakReference<>(null);
+    private static volatile String restoredContentKey;
+    private static volatile String restoredImportedUrl;
     private static volatile Constructor<?> subtitleConstructor;
 
     private LocalSubtitleRuntime() {}
@@ -104,6 +106,7 @@ public final class LocalSubtitleRuntime {
             suppressNextTransientDismiss = false;
             activeImportedUrl = null;
             activeContentKey = null;
+            resetRestoreGate();
         }
         activeController = new WeakReference<>(controller);
     }
@@ -129,7 +132,15 @@ public final class LocalSubtitleRuntime {
     public static List mergeSubtitles(List original) {
         LocalSubtitleRefreshState.observeForCompose();
         if (mpvActive || !featureEnabled) return original;
-        ArrayList<Object> merged = new ArrayList<>(original == null ? Collections.emptyList() : original);
+        ArrayList<Object> merged = new ArrayList<>();
+        if (original != null) {
+            for (Object subtitle : original) {
+                // The overlay can feed the result of a previous composition back into this
+                // boundary. Remove every row owned by this patch before rebuilding the local
+                // section so cursor movement cannot grow the list or its language count.
+                if (!isLocalSubtitle(subtitle)) merged.add(subtitle);
+            }
+        }
         Object action = createSubtitle(LOCAL_LANGUAGE_KEY, "", LOCAL_LANGUAGE_KEY, LOCAL_SOURCE_LABEL, null);
         if (action != null) merged.add(action);
         synchronized (LocalSubtitleRuntime.class) {
@@ -168,9 +179,10 @@ public final class LocalSubtitleRuntime {
     public static boolean rejectImportedSubtitleForMpv(Object subtitle) {
         boolean imported = isImportedSubtitle(subtitle);
         if (!imported) {
-            importedSelectionActive = false;
-            activeImportedUrl = null;
-            return false;
+            // Nuvio's track-preference reconciler can try to restore its stale addon choice
+            // while the freshly attached local track is still settling. User selections pass
+            // through rememberImportedSelection first, which clears this guard explicitly.
+            return importedSelectionActive;
         }
         importedSelectionActive = featureEnabled && !mpvActive;
         activeImportedUrl = importedSelectionActive ? subtitleString(subtitle, "getUrl") : null;
@@ -188,11 +200,51 @@ public final class LocalSubtitleRuntime {
         return true;
     }
 
+    /** Supplies Nuvio's buffer-preserving sidecar path with a patch-owned private file. */
+    public static synchronized String localSubtitleText(String url) {
+        if (!featureEnabled || mpvActive || !importedSelectionActive || url == null ||
+                !url.equals(activeImportedUrl)) return null;
+        ImportedSubtitle imported = importedByUrl(url);
+        if (imported == null || !belongsToContent(imported, activeContentKey)) return null;
+        File file = imported.storedFile;
+        if (!file.isFile()) throw new IllegalStateException("The imported subtitle file is unavailable");
+        long length = file.length();
+        if (length <= 0L || length > MAX_IMPORT_BYTES) {
+            throw new IllegalStateException("The imported subtitle file is invalid");
+        }
+        try (FileInputStream input = new FileInputStream(file);
+             ByteArrayOutputStream output = new ByteArrayOutputStream((int) length)) {
+            byte[] buffer = new byte[8192];
+            int total = 0;
+            while (true) {
+                int read = input.read(buffer);
+                if (read < 0) break;
+                total += read;
+                if (total > MAX_IMPORT_BYTES) {
+                    throw new IllegalStateException("The imported subtitle file exceeds 10 MB");
+                }
+                output.write(buffer, 0, read);
+            }
+            if (total == 0) throw new IllegalStateException("The imported subtitle file is empty");
+            return decodeSubtitleText(output.toByteArray());
+        } catch (IllegalStateException error) {
+            throw error;
+        } catch (Throwable error) {
+            throw new IllegalStateException("Unable to read the imported subtitle file", error);
+        }
+    }
+
     /** Stores a local choice in patch-private state and bypasses Nuvio's own preference. */
     public static synchronized boolean rememberImportedSelection(
             String contentId, Integer season, Integer episode, Object subtitle
     ) {
-        if (!isImportedSubtitle(subtitle)) return false;
+        if (!isImportedSubtitle(subtitle)) {
+            // This method is Nuvio's user-choice boundary. An explicit ordinary addon choice
+            // releases the local-selection guard and removes the patch-private preference.
+            // Automatic restore calls bypass this boundary and remain blocked while local is active.
+            clearImportedSelection(contentId, season, episode);
+            return false;
+        }
         if (!featureEnabled) return true;
         String key = contentKey(contentId, season, episode);
         String url = subtitleString(subtitle, "getUrl");
@@ -239,9 +291,10 @@ public final class LocalSubtitleRuntime {
 
     /** Returns the saved local choice for this title/episode so ExoPlayer can attach it again. */
     public static synchronized Object restoredSubtitle(
-            String contentId, Integer season, Integer episode
+            Object controller, String contentId, Integer season, Integer episode
     ) {
         if (!featureEnabled) return null;
+        observeController(controller);
         String key = contentKey(contentId, season, episode);
         String selectedUrl = SELECTED_BY_CONTENT.get(key);
         if (selectedUrl == null) return null;
@@ -259,6 +312,29 @@ public final class LocalSubtitleRuntime {
             persistSelections();
             return null;
         }
+        if (importedSelectionActive && key.equals(activeContentKey) &&
+                selectedUrl.equals(activeImportedUrl)) {
+            // A user selection already activated this sidecar. A later track update must not
+            // select the same private file again or let Nuvio's stale preference replace it.
+            restoredController = new WeakReference<>(controller);
+            restoredContentKey = key;
+            restoredImportedUrl = selectedUrl;
+            return null;
+        }
+        boolean alreadyHandled = restoredController.get() == controller &&
+                key.equals(restoredContentKey) && selectedUrl.equals(restoredImportedUrl);
+        if (alreadyHandled) {
+            activeContentKey = key;
+            activeImportedUrl = selectedUrl;
+            importedSelectionActive = true;
+            return null;
+        }
+
+        // Mark the restore before calling Nuvio's selection method. Track updates may revisit
+        // preference restoration; this single-shot gate prevents repeated sidecar selection.
+        restoredController = new WeakReference<>(controller);
+        restoredContentKey = key;
+        restoredImportedUrl = selectedUrl;
         activeContentKey = key;
         activeImportedUrl = selectedUrl;
         importedSelectionActive = true;
@@ -267,7 +343,7 @@ public final class LocalSubtitleRuntime {
         return createImportedSubtitle(imported);
     }
 
-    /** Ignores only the refresh-induced transient dismissal after a new local selection. */
+    /** Ignores only the picker-return transient dismissal after a new local selection. */
     public static synchronized boolean shouldSuppressTransientDismiss(Object event) {
         if (!suppressNextTransientDismiss || event == null ||
                 !"OnDismissTransientOverlay".equals(event.toString())) return false;
@@ -290,10 +366,12 @@ public final class LocalSubtitleRuntime {
         importedSelectionActive = false;
         mpvActive = false;
         featureEnabled = true;
+        activeController = new WeakReference<>(null);
+        resetRestoreGate();
     }
 
-    /** Keeps Nuvio's saved track state from replacing a temporary local selection after Media3 refreshes. */
-    public static boolean shouldSuppressTrackPreferenceRestore() {
+    /** Blocks only Nuvio's stale subtitle action while still allowing track reconciliation to finish. */
+    public static boolean shouldBlockNuvioSubtitleSelection() {
         return importedSelectionActive;
     }
 
@@ -349,9 +427,17 @@ public final class LocalSubtitleRuntime {
         if (isPickerAction(subtitle)) return false;
         if (isImportedSubtitle(subtitle)) {
             String url = subtitleString(subtitle, "getUrl");
-            return selected || (importedSelectionActive && url != null && url.equals(activeImportedUrl));
+            return importedSelectionActive
+                    ? url != null && url.equals(activeImportedUrl)
+                    : selected;
         }
-        return selected;
+        return importedSelectionActive ? false : selected;
+    }
+
+    private static void resetRestoreGate() {
+        restoredController = new WeakReference<>(null);
+        restoredContentKey = null;
+        restoredImportedUrl = null;
     }
 
     /** Nuvio's option-focus restore can retain a stale requester after a Media3 refresh. */
@@ -432,7 +518,7 @@ public final class LocalSubtitleRuntime {
             target.delete();
             throw new IllegalArgumentException("The selected subtitle file is empty");
         }
-        String language = inferLanguageCode(displayName, decodeSample(sample));
+        String language = inferLanguageCode(displayName, decodeSubtitleText(sample));
         ImportedSubtitle imported = new ImportedSubtitle(
                 displayName, language, target, System.currentTimeMillis(), ownerContentKey
         );
@@ -641,16 +727,24 @@ public final class LocalSubtitleRuntime {
         return result;
     }
 
-    private static String decodeSample(byte[] bytes) {
+    private static String decodeSubtitleText(byte[] bytes) {
+        int offset = 0;
+        Charset charset = StandardCharsets.UTF_8;
         if (bytes.length >= 2) {
             if ((bytes[0] & 0xff) == 0xff && (bytes[1] & 0xff) == 0xfe) {
-                return new String(bytes, Charset.forName("UTF-16LE"));
-            }
-            if ((bytes[0] & 0xff) == 0xfe && (bytes[1] & 0xff) == 0xff) {
-                return new String(bytes, Charset.forName("UTF-16BE"));
+                charset = Charset.forName("UTF-16LE");
+                offset = 2;
+            } else if ((bytes[0] & 0xff) == 0xfe && (bytes[1] & 0xff) == 0xff) {
+                charset = Charset.forName("UTF-16BE");
+                offset = 2;
             }
         }
-        return new String(bytes, StandardCharsets.UTF_8);
+        if (bytes.length >= 3 && (bytes[0] & 0xff) == 0xef &&
+                (bytes[1] & 0xff) == 0xbb && (bytes[2] & 0xff) == 0xbf) {
+            charset = StandardCharsets.UTF_8;
+            offset = 3;
+        }
+        return new String(bytes, offset, bytes.length - offset, charset);
     }
 
     private static String extensionOf(String filename) {
