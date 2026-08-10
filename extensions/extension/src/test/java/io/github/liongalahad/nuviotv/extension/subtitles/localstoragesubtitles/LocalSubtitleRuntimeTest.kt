@@ -1,12 +1,20 @@
 package io.github.liongalahad.nuviotv.extension.subtitles.localstoragesubtitles
 
 import java.io.File
+import com.nuvio.tv.domain.model.Subtitle
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
 
 class LocalSubtitleRuntimeTest {
+    @get:Rule
+    val temporaryFolder = TemporaryFolder()
+
     data class FakeSubtitle(
         val id: String,
         val url: String,
@@ -113,6 +121,107 @@ class LocalSubtitleRuntimeTest {
         assertFalse(LocalSubtitleRuntime.selectableOptionState(false, imported))
     }
 
+    @Test fun `recomposition rebuilds one local section without growing the count`() {
+        val movie = LocalSubtitleRuntime.contentKeyForTesting("movie-a", null, null)
+        val stored = LocalSubtitleRuntime.ImportedSubtitle(
+            "Movie.srt", "und", File("Movie.srt"), 1_000L, movie
+        )
+        val ordinary = Subtitle("english", "https://example.test/en.srt", "en", "Addon", null)
+
+        try {
+            LocalSubtitleRuntime.setImportStateForTesting(stored, movie)
+            val first = LocalSubtitleRuntime.mergeSubtitles(listOf(ordinary))
+            val second = LocalSubtitleRuntime.mergeSubtitles(first)
+
+            assertEquals(first.size, second.size)
+            assertEquals(1, second.count { it === ordinary })
+            assertEquals(2, second.count {
+                it is Subtitle && it.lang == LocalSubtitleRuntime.LOCAL_LANGUAGE_KEY
+            })
+        } finally {
+            LocalSubtitleRuntime.setImportStateForTesting(null, null)
+        }
+    }
+
+    @Test fun `active local subtitle is the only selected option`() {
+        val movie = LocalSubtitleRuntime.contentKeyForTesting("movie-a", null, null)
+        val storedFile = File("/data/user/0/com.nuvio.tv/files/Movie.srt")
+        val stored = LocalSubtitleRuntime.ImportedSubtitle(
+            "Movie.srt", "und", storedFile, 1_000L, movie
+        )
+        val imported = FakeSubtitle(
+            id = "und\nMovie.srt",
+            url = LocalSubtitleRuntime.storedFileUrlForTesting(storedFile)
+        )
+        val otherLocal = FakeSubtitle(
+            id = "und\nOther.srt",
+            url = "file:///data/user/0/com.nuvio.tv/files/Other.srt"
+        )
+        val english = FakeSubtitle(
+            id = "english", url = "https://example.test/en.srt", lang = "en", addonName = "Addon"
+        )
+
+        try {
+            LocalSubtitleRuntime.setImportStateForTesting(stored, movie)
+            assertFalse(LocalSubtitleRuntime.rejectImportedSubtitleForMpv(imported))
+
+            assertTrue(LocalSubtitleRuntime.selectableOptionState(false, imported))
+            assertFalse(LocalSubtitleRuntime.selectableOptionState(true, otherLocal))
+            assertFalse(LocalSubtitleRuntime.selectableOptionState(true, english))
+        } finally {
+            LocalSubtitleRuntime.setImportStateForTesting(null, null)
+        }
+    }
+
+    @Test fun `saved local subtitle restore is single shot per controller and content`() {
+        val contentId = "movie-a"
+        val movie = LocalSubtitleRuntime.contentKeyForTesting(contentId, null, null)
+        val storedFile = temporaryFolder.newFile("Movie.srt")
+        val stored = LocalSubtitleRuntime.ImportedSubtitle(
+            "Movie.srt", "und", storedFile, 1_000L, movie
+        )
+        val imported = FakeSubtitle(
+            id = "und\nMovie.srt",
+            url = LocalSubtitleRuntime.storedFileUrlForTesting(storedFile)
+        )
+        val controller = Any()
+
+        try {
+            LocalSubtitleRuntime.setImportStateForTesting(stored, movie)
+            assertTrue(LocalSubtitleRuntime.rememberImportedSelection(contentId, null, null, imported))
+            LocalSubtitleRuntime.clearImportedSelection()
+
+            assertNotNull(LocalSubtitleRuntime.restoredSubtitle(controller, contentId, null, null))
+            assertNull(LocalSubtitleRuntime.restoredSubtitle(controller, contentId, null, null))
+            assertTrue(LocalSubtitleRuntime.shouldBlockNuvioSubtitleSelection())
+        } finally {
+            LocalSubtitleRuntime.setImportStateForTesting(null, null)
+        }
+    }
+
+    @Test fun `manual local selection prevents track update from selecting it twice`() {
+        val contentId = "movie-a"
+        val movie = LocalSubtitleRuntime.contentKeyForTesting(contentId, null, null)
+        val storedFile = temporaryFolder.newFile("Manual.srt")
+        val stored = LocalSubtitleRuntime.ImportedSubtitle(
+            "Manual.srt", "und", storedFile, 1_000L, movie
+        )
+        val imported = FakeSubtitle(
+            id = "und\nManual.srt",
+            url = LocalSubtitleRuntime.storedFileUrlForTesting(storedFile)
+        )
+
+        try {
+            LocalSubtitleRuntime.setImportStateForTesting(stored, movie)
+            assertTrue(LocalSubtitleRuntime.rememberImportedSelection(contentId, null, null, imported))
+
+            assertNull(LocalSubtitleRuntime.restoredSubtitle(Any(), contentId, null, null))
+            assertTrue(LocalSubtitleRuntime.shouldBlockNuvioSubtitleSelection())
+        } finally {
+            LocalSubtitleRuntime.setImportStateForTesting(null, null)
+        }
+    }
+
     @Test fun `local storage is placed directly after none`() {
         val none = FakeRailItem("__off__")
         val english = FakeRailItem("en")
@@ -139,7 +248,7 @@ class LocalSubtitleRuntimeTest {
         assertFalse(LocalSubtitleRuntime.isImportedSubtitle(addon))
     }
 
-    @Test fun `local selection suppresses stale restore until another choice`() {
+    @Test fun `local selection blocks stale automatic restore until an explicit addon choice`() {
         val movie = LocalSubtitleRuntime.contentKeyForTesting("movie-a", null, null)
         val storedFile = File("/data/user/0/com.nuvio.tv/files/Movie.srt")
         val stored = LocalSubtitleRuntime.ImportedSubtitle(
@@ -160,10 +269,67 @@ class LocalSubtitleRuntimeTest {
             LocalSubtitleRuntime.setImportStateForTesting(stored, movie)
             assertFalse(LocalSubtitleRuntime.rejectImportedSubtitleForMpv(imported))
             assertTrue(LocalSubtitleRuntime.importedSelectionActiveForTesting())
-            assertTrue(LocalSubtitleRuntime.shouldSuppressTrackPreferenceRestore())
-            assertFalse(LocalSubtitleRuntime.rejectImportedSubtitleForMpv(addon))
+            assertTrue(LocalSubtitleRuntime.shouldBlockNuvioSubtitleSelection())
+
+            assertTrue(LocalSubtitleRuntime.rejectImportedSubtitleForMpv(addon))
+            assertTrue(LocalSubtitleRuntime.importedSelectionActiveForTesting())
+
+            assertFalse(LocalSubtitleRuntime.rememberImportedSelection("movie-a", null, null, addon))
             assertFalse(LocalSubtitleRuntime.importedSelectionActiveForTesting())
-            assertFalse(LocalSubtitleRuntime.shouldSuppressTrackPreferenceRestore())
+            assertFalse(LocalSubtitleRuntime.shouldBlockNuvioSubtitleSelection())
+            assertFalse(LocalSubtitleRuntime.rejectImportedSubtitleForMpv(addon))
+        } finally {
+            LocalSubtitleRuntime.setImportStateForTesting(null, null)
+        }
+    }
+
+    @Test fun `active imported subtitle text is read from its exact private file`() {
+        val contentId = "movie-a"
+        val movie = LocalSubtitleRuntime.contentKeyForTesting(contentId, null, null)
+        val storedFile = temporaryFolder.newFile("Movie.srt")
+        val text = "1\n00:00:01,000 --> 00:00:03,000\nLocal subtitle\n"
+        storedFile.writeText(text, Charsets.UTF_8)
+        val stored = LocalSubtitleRuntime.ImportedSubtitle(
+            "Movie.srt", "en", storedFile, 1_000L, movie
+        )
+        val imported = FakeSubtitle(
+            id = "en\nMovie.srt",
+            url = LocalSubtitleRuntime.storedFileUrlForTesting(storedFile)
+        )
+
+        try {
+            LocalSubtitleRuntime.setImportStateForTesting(stored, movie)
+            assertTrue(LocalSubtitleRuntime.rememberImportedSelection(contentId, null, null, imported))
+            assertFalse(LocalSubtitleRuntime.rejectImportedSubtitleForMpv(imported))
+
+            assertEquals(text, LocalSubtitleRuntime.localSubtitleText(imported.url))
+            assertNull(LocalSubtitleRuntime.localSubtitleText("file:///private/Other.srt"))
+            assertNull(LocalSubtitleRuntime.localSubtitleText("https://example.test/subtitle.srt"))
+        } finally {
+            LocalSubtitleRuntime.setImportStateForTesting(null, null)
+        }
+    }
+
+    @Test fun `local subtitle reader removes a UTF-16 byte order mark`() {
+        val contentId = "movie-a"
+        val movie = LocalSubtitleRuntime.contentKeyForTesting(contentId, null, null)
+        val storedFile = temporaryFolder.newFile("Movie-utf16.srt")
+        val text = "1\n00:00:01,000 --> 00:00:03,000\nUnicode subtitle\n"
+        storedFile.writeBytes(byteArrayOf(0xff.toByte(), 0xfe.toByte()) + text.toByteArray(Charsets.UTF_16LE))
+        val stored = LocalSubtitleRuntime.ImportedSubtitle(
+            "Movie-utf16.srt", "en", storedFile, 1_000L, movie
+        )
+        val imported = FakeSubtitle(
+            id = "en\nMovie-utf16.srt",
+            url = LocalSubtitleRuntime.storedFileUrlForTesting(storedFile)
+        )
+
+        try {
+            LocalSubtitleRuntime.setImportStateForTesting(stored, movie)
+            assertTrue(LocalSubtitleRuntime.rememberImportedSelection(contentId, null, null, imported))
+            assertFalse(LocalSubtitleRuntime.rejectImportedSubtitleForMpv(imported))
+
+            assertEquals(text, LocalSubtitleRuntime.localSubtitleText(imported.url))
         } finally {
             LocalSubtitleRuntime.setImportStateForTesting(null, null)
         }
@@ -185,7 +351,7 @@ class LocalSubtitleRuntimeTest {
             LocalSubtitleRuntime.setImportStateForTesting(stored, movieB)
             assertTrue(LocalSubtitleRuntime.rejectImportedSubtitleForMpv(staleRow))
             assertFalse(LocalSubtitleRuntime.importedSelectionActiveForTesting())
-            assertFalse(LocalSubtitleRuntime.shouldSuppressTrackPreferenceRestore())
+            assertFalse(LocalSubtitleRuntime.shouldBlockNuvioSubtitleSelection())
         } finally {
             LocalSubtitleRuntime.setImportStateForTesting(null, null)
         }

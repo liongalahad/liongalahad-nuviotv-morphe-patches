@@ -11,7 +11,6 @@ import kotlin.jvm.functions.Function3;
 
 /** Shared renderer for every control placed inside a Morphe settings category. */
 final class MorpheSettingsRows {
-    private static final String NATIVE_SETTINGS_CLASS = "sa.ic";
     private static final int NATIVE_CATEGORY_LIST_DEFAULT_MASK = 510 & ~16;
 
     private static volatile Method nativeCardMethod;
@@ -58,7 +57,12 @@ final class MorpheSettingsRows {
                 method = findNativeMethod(composer, true);
                 nativeSwitchMethod = method;
             }
-            method.invoke(null, title, description, selected, action, modifier, null, true, composer, 0, 112);
+            if (method.getParameterCount() == 7) {
+                method.invoke(null, title, description, selected, action, (Function0<Unit>) () -> Unit.INSTANCE,
+                        composer, 0);
+            } else {
+                method.invoke(null, title, description, selected, action, modifier, null, true, composer, 0, 112);
+            }
         } catch (ReflectiveOperationException error) {
             throw new IllegalStateException("Unable to render a native Morphe switch row", error);
         }
@@ -124,9 +128,9 @@ final class MorpheSettingsRows {
             Method readSlot = composer.getClass().getDeclaredMethod("R");
             readSlot.setAccessible(true);
             Object requester = readSlot.invoke(composer);
-            if (requester == null || !"z1.x".equals(requester.getClass().getName())) {
+            if (requester == null || !"z1.y".equals(requester.getClass().getName())) {
                 Class<?> requesterClass = Class.forName(
-                        "z1.x", false, composer.getClass().getClassLoader()
+                        "z1.y", false, composer.getClass().getClassLoader()
                 );
                 requester = requesterClass.getDeclaredConstructor().newInstance();
                 Method writeSlot = composer.getClass().getDeclaredMethod("o0", Object.class);
@@ -168,21 +172,31 @@ final class MorpheSettingsRows {
         try {
             Method method = nativeLazyColumnMethod;
             if (method == null) {
-                Class<?> lazyColumnClass = Class.forName("a.a", false, composer.getClass().getClassLoader());
                 Class<?> verticalArrangementClass = Class.forName(
-                        "c0.i", false, composer.getClass().getClassLoader()
+                        "c0.h", false, composer.getClass().getClassLoader()
                 );
-                for (Method candidate : lazyColumnClass.getDeclaredMethods()) {
-                    Class<?>[] parameters = candidate.getParameterTypes();
-                    if (Modifier.isStatic(candidate.getModifiers()) &&
-                            candidate.getReturnType() == Void.TYPE && parameters.length == 12 &&
-                            parameters[3] == verticalArrangementClass &&
-                            Function1.class.isAssignableFrom(parameters[8]) &&
-                            parameters[10] == Integer.TYPE && parameters[11] == Integer.TYPE) {
-                        candidate.setAccessible(true);
-                        method = candidate;
-                        break;
+                for (String className : new String[]{"t6.a", "a.a"}) {
+                    Class<?> lazyColumnClass;
+                    try {
+                        lazyColumnClass = Class.forName(
+                                className, false, composer.getClass().getClassLoader()
+                        );
+                    } catch (ClassNotFoundException ignored) {
+                        continue;
                     }
+                    for (Method candidate : lazyColumnClass.getDeclaredMethods()) {
+                        Class<?>[] parameters = candidate.getParameterTypes();
+                        if (Modifier.isStatic(candidate.getModifiers()) &&
+                                candidate.getReturnType() == Void.TYPE && parameters.length == 12 &&
+                                parameters[3] == verticalArrangementClass &&
+                                Function1.class.isAssignableFrom(parameters[8]) &&
+                                parameters[10] == Integer.TYPE && parameters[11] == Integer.TYPE) {
+                            candidate.setAccessible(true);
+                            method = candidate;
+                            break;
+                        }
+                    }
+                    if (method != null) break;
                 }
                 if (method == null) throw new NoSuchMethodException("Native LazyColumn");
                 nativeLazyColumnMethod = method;
@@ -232,21 +246,30 @@ final class MorpheSettingsRows {
         try {
             Method method = nativeCollapsibleSectionMethod;
             if (method == null) {
-                Class<?> settingsClass = Class.forName("sa.u", false, composer.getClass().getClassLoader());
-                for (Method candidate : settingsClass.getDeclaredMethods()) {
-                    Class<?>[] parameters = candidate.getParameterTypes();
-                    if (Modifier.isStatic(candidate.getModifiers()) &&
-                            candidate.getReturnType() == Void.TYPE && parameters.length == 9 &&
-                            parameters[0] == String.class && parameters[1] == String.class &&
-                            parameters[2] == Boolean.TYPE &&
-                            Function0.class.isAssignableFrom(parameters[3]) &&
-                            Function0.class.isAssignableFrom(parameters[5]) &&
-                            Function3.class.isAssignableFrom(parameters[6]) &&
-                            parameters[8] == Integer.TYPE) {
-                        candidate.setAccessible(true);
-                        method = candidate;
-                        break;
+                for (String className : new String[]{"sa.v", "sa.u"}) {
+                    Class<?> settingsClass;
+                    try {
+                        settingsClass = Class.forName(className, false, composer.getClass().getClassLoader());
+                    } catch (ClassNotFoundException ignored) {
+                        continue;
                     }
+                    for (Method candidate : settingsClass.getDeclaredMethods()) {
+                        Class<?>[] parameters = candidate.getParameterTypes();
+                        if (Modifier.isStatic(candidate.getModifiers()) &&
+                                candidate.getReturnType() == Void.TYPE && parameters.length == 9 &&
+                                parameters[0] == String.class && parameters[1] == String.class &&
+                                parameters[2] == Boolean.TYPE &&
+                                Function0.class.isAssignableFrom(parameters[3]) &&
+                                "z1.y".equals(parameters[4].getName()) &&
+                                Function0.class.isAssignableFrom(parameters[5]) &&
+                                Function3.class.isAssignableFrom(parameters[6]) &&
+                                parameters[8] == Integer.TYPE) {
+                            candidate.setAccessible(true);
+                            method = candidate;
+                            break;
+                        }
+                    }
+                    if (method != null) break;
                 }
                 if (method == null) throw new NoSuchMethodException("Native CollapsibleSectionCard");
                 nativeCollapsibleSectionMethod = method;
@@ -293,19 +316,27 @@ final class MorpheSettingsRows {
     ) throws ReflectiveOperationException {
         Method method = composableLambdaFactoryMethod;
         if (method == null) {
-            Class<?> factoryClass = Class.forName(
-                    "o1.y", false, composer.getClass().getClassLoader()
-            );
-            for (Method candidate : factoryClass.getDeclaredMethods()) {
-                Class<?>[] parameters = candidate.getParameterTypes();
-                if (Modifier.isStatic(candidate.getModifiers()) &&
-                        parameters.length == 3 && parameters[0] == Integer.TYPE &&
-                        kotlin.Function.class.isAssignableFrom(parameters[1]) &&
-                        Function3.class.isAssignableFrom(candidate.getReturnType())) {
-                    candidate.setAccessible(true);
-                    method = candidate;
-                    break;
+            for (String className : new String[]{"o1.x", "o1.y"}) {
+                Class<?> factoryClass;
+                try {
+                    factoryClass = Class.forName(
+                            className, false, composer.getClass().getClassLoader()
+                    );
+                } catch (ClassNotFoundException ignored) {
+                    continue;
                 }
+                for (Method candidate : factoryClass.getDeclaredMethods()) {
+                    Class<?>[] parameters = candidate.getParameterTypes();
+                    if (Modifier.isStatic(candidate.getModifiers()) &&
+                            parameters.length == 3 && parameters[0] == Integer.TYPE &&
+                            kotlin.Function.class.isAssignableFrom(parameters[1]) &&
+                            Function3.class.isAssignableFrom(candidate.getReturnType())) {
+                        candidate.setAccessible(true);
+                        method = candidate;
+                        break;
+                    }
+                }
+                if (method != null) break;
             }
             if (method == null) throw new NoSuchMethodException("Native composable-lambda factory");
             composableLambdaFactoryMethod = method;
@@ -335,17 +366,25 @@ final class MorpheSettingsRows {
         mediumSpacing.setAccessible(true);
         float spacing = ((Number) mediumSpacing.invoke(tokens)).floatValue();
 
-        Class<?> arrangementHelpers = Class.forName("c0.j", false, loader);
         Method factory = null;
-        for (Method candidate : arrangementHelpers.getDeclaredMethods()) {
-            Class<?>[] parameters = candidate.getParameterTypes();
-            if (Modifier.isStatic(candidate.getModifiers()) && parameters.length == 1 &&
-                    parameters[0] == Float.TYPE &&
-                    expectedType.isAssignableFrom(candidate.getReturnType())) {
-                candidate.setAccessible(true);
-                factory = candidate;
-                break;
+        for (String className : new String[]{"c0.i", "c0.j"}) {
+            Class<?> arrangementHelpers;
+            try {
+                arrangementHelpers = Class.forName(className, false, loader);
+            } catch (ClassNotFoundException ignored) {
+                continue;
             }
+            for (Method candidate : arrangementHelpers.getDeclaredMethods()) {
+                Class<?>[] parameters = candidate.getParameterTypes();
+                if (Modifier.isStatic(candidate.getModifiers()) && parameters.length == 1 &&
+                        parameters[0] == Float.TYPE &&
+                        expectedType.isAssignableFrom(candidate.getReturnType())) {
+                    candidate.setAccessible(true);
+                    factory = candidate;
+                    break;
+                }
+            }
+            if (factory != null) break;
         }
         if (factory == null) throw new NoSuchMethodException("Native spaced category arrangement");
         Object arrangement = factory.invoke(null, spacing);
@@ -356,22 +395,33 @@ final class MorpheSettingsRows {
     private static Method findNativeMethod(Object composer, boolean switchRow)
             throws ReflectiveOperationException {
         ClassLoader loader = composer.getClass().getClassLoader();
-        Class<?> settingsClass = Class.forName(NATIVE_SETTINGS_CLASS, false, loader);
-        int expectedParameters = switchRow ? 10 : 18;
-        for (Method method : settingsClass.getDeclaredMethods()) {
-            Class<?>[] parameters = method.getParameterTypes();
-            if (!Modifier.isStatic(method.getModifiers()) || method.getReturnType() != Void.TYPE ||
-                    parameters.length != expectedParameters || parameters[0] != String.class ||
-                    parameters[1] != String.class) {
+        String[] classNames = switchRow
+                ? new String[]{"sa.v", "sa.ic"}
+                : new String[]{"sa.nc", "sa.ic"};
+        for (String className : classNames) {
+            Class<?> settingsClass;
+            try {
+                settingsClass = Class.forName(className, false, loader);
+            } catch (ClassNotFoundException ignored) {
                 continue;
             }
-            if (switchRow) {
-                if (parameters[2] != Boolean.TYPE || !Function0.class.isAssignableFrom(parameters[3])) continue;
-            } else {
-                if (parameters[2] != String.class || !Function0.class.isAssignableFrom(parameters[3])) continue;
+            for (Method method : settingsClass.getDeclaredMethods()) {
+                Class<?>[] parameters = method.getParameterTypes();
+                if (!Modifier.isStatic(method.getModifiers()) || method.getReturnType() != Void.TYPE ||
+                        parameters.length != (switchRow && className.equals("sa.v") ? 7 : switchRow ? 10 : 18) ||
+                        parameters[0] != String.class || parameters[1] != String.class) {
+                    continue;
+                }
+                if (switchRow) {
+                    if (parameters[2] != Boolean.TYPE ||
+                            !Function0.class.isAssignableFrom(parameters[3])) continue;
+                } else if (parameters[2] != String.class ||
+                        !Function0.class.isAssignableFrom(parameters[3])) {
+                    continue;
+                }
+                method.setAccessible(true);
+                return method;
             }
-            method.setAccessible(true);
-            return method;
         }
         throw new NoSuchMethodException("Native Nuvio settings row method");
     }
