@@ -1,3 +1,10 @@
+## [1.0.0-dev.17](https://github.com/liongalahad/nuviotv-morphe-patches/compare/v1.0.0-dev.16...v1.0.0-dev.17) (2026-08-10)
+
+### 🐛 Bug Fixes
+
+* **local-subtitles:** isolate imports by content ([6adc7b3](https://github.com/liongalahad/nuviotv-morphe-patches/commit/6adc7b31a5a8737a77e331ceda65cb556f7f5a30))
+* **settings:** match native category spacing ([920f9b6](https://github.com/liongalahad/nuviotv-morphe-patches/commit/920f9b62dc13b00d9fbc67da670108996afd2e75))
+
 ## [1.0.0-dev.16](https://github.com/liongalahad/nuviotv-morphe-patches/compare/v1.0.0-dev.15...v1.0.0-dev.16) (2026-08-07)
 
 ### ✨ New Features

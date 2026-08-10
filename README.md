@@ -35,7 +35,7 @@ Every run is isolated under `local/patches/<patch-id>/<timestamp>/`. See [Window
 ## Available patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.0.0-dev.16](https://github.com/liongalahad/nuviotv-morphe-patches/releases/tag/v1.0.0-dev.16)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;6 patches total
+> **[v1.0.0-dev.17](https://github.com/liongalahad/nuviotv-morphe-patches/releases/tag/v1.0.0-dev.17)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;6 patches total
 <details open>
 <summary>📦 NuvioTV&nbsp;&nbsp;•&nbsp;&nbsp;6 patches</summary>
 <br>
