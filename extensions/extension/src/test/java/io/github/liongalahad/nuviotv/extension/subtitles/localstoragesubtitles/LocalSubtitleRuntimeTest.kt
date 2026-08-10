@@ -1,5 +1,6 @@
 package io.github.liongalahad.nuviotv.extension.subtitles.localstoragesubtitles
 
+import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -139,9 +140,14 @@ class LocalSubtitleRuntimeTest {
     }
 
     @Test fun `local selection suppresses stale restore until another choice`() {
+        val movie = LocalSubtitleRuntime.contentKeyForTesting("movie-a", null, null)
+        val storedFile = File("/data/user/0/com.nuvio.tv/files/Movie.srt")
+        val stored = LocalSubtitleRuntime.ImportedSubtitle(
+            "Movie.srt", "und", storedFile, 1_000L, movie
+        )
         val imported = FakeSubtitle(
             id = "und\nMovie.srt",
-            url = "file:///data/user/0/com.nuvio.tv/cache/Movie.srt"
+            url = LocalSubtitleRuntime.storedFileUrlForTesting(storedFile)
         )
         val addon = FakeSubtitle(
             id = "123",
@@ -150,12 +156,39 @@ class LocalSubtitleRuntimeTest {
             addonName = "OpenSubtitles"
         )
 
-        assertFalse(LocalSubtitleRuntime.rejectImportedSubtitleForMpv(imported))
-        assertTrue(LocalSubtitleRuntime.importedSelectionActiveForTesting())
-        assertTrue(LocalSubtitleRuntime.shouldSuppressTrackPreferenceRestore())
-        assertFalse(LocalSubtitleRuntime.rejectImportedSubtitleForMpv(addon))
-        assertFalse(LocalSubtitleRuntime.importedSelectionActiveForTesting())
-        assertFalse(LocalSubtitleRuntime.shouldSuppressTrackPreferenceRestore())
+        try {
+            LocalSubtitleRuntime.setImportStateForTesting(stored, movie)
+            assertFalse(LocalSubtitleRuntime.rejectImportedSubtitleForMpv(imported))
+            assertTrue(LocalSubtitleRuntime.importedSelectionActiveForTesting())
+            assertTrue(LocalSubtitleRuntime.shouldSuppressTrackPreferenceRestore())
+            assertFalse(LocalSubtitleRuntime.rejectImportedSubtitleForMpv(addon))
+            assertFalse(LocalSubtitleRuntime.importedSelectionActiveForTesting())
+            assertFalse(LocalSubtitleRuntime.shouldSuppressTrackPreferenceRestore())
+        } finally {
+            LocalSubtitleRuntime.setImportStateForTesting(null, null)
+        }
+    }
+
+    @Test fun `stale local row from another movie cannot be selected`() {
+        val movieA = LocalSubtitleRuntime.contentKeyForTesting("movie-a", null, null)
+        val movieB = LocalSubtitleRuntime.contentKeyForTesting("movie-b", null, null)
+        val storedFile = File("/data/user/0/com.nuvio.tv/files/Movie.srt")
+        val stored = LocalSubtitleRuntime.ImportedSubtitle(
+            "Movie.srt", "und", storedFile, 1_000L, movieA
+        )
+        val staleRow = FakeSubtitle(
+            id = "und\nMovie.srt",
+            url = LocalSubtitleRuntime.storedFileUrlForTesting(storedFile)
+        )
+
+        try {
+            LocalSubtitleRuntime.setImportStateForTesting(stored, movieB)
+            assertTrue(LocalSubtitleRuntime.rejectImportedSubtitleForMpv(staleRow))
+            assertFalse(LocalSubtitleRuntime.importedSelectionActiveForTesting())
+            assertFalse(LocalSubtitleRuntime.shouldSuppressTrackPreferenceRestore())
+        } finally {
+            LocalSubtitleRuntime.setImportStateForTesting(null, null)
+        }
     }
 
     @Test fun `reopened local section starts from the language rail`() {
@@ -171,6 +204,76 @@ class LocalSubtitleRuntimeTest {
         assertFalse(LocalSubtitleRuntime.isExpiredForTesting(importedAt, importedAt + 7L * day - 1L))
         assertTrue(LocalSubtitleRuntime.isExpiredForTesting(importedAt, importedAt + 7L * day))
         assertFalse(LocalSubtitleRuntime.isExpiredForTesting(importedAt, importedAt - day))
+    }
+
+    @Test fun `movie import is visible only for its owning movie`() {
+        val movieA = LocalSubtitleRuntime.contentKeyForTesting("movie-a", null, null)
+        val movieB = LocalSubtitleRuntime.contentKeyForTesting("movie-b", null, null)
+        val imported = LocalSubtitleRuntime.ImportedSubtitle(
+            "Movie.en.srt",
+            "en",
+            File("Movie.en.srt"),
+            1_000L,
+            movieA
+        )
+
+        assertTrue(LocalSubtitleRuntime.belongsToContent(imported, movieA))
+        assertFalse(LocalSubtitleRuntime.belongsToContent(imported, movieB))
+    }
+
+    @Test fun `missing playback identity cannot become a shared import owner`() {
+        assertEquals("", LocalSubtitleRuntime.contentKeyForTesting(null, null, null))
+        assertEquals("", LocalSubtitleRuntime.contentKeyForTesting("  ", 1, 2))
+    }
+
+    @Test fun `series import is isolated to the exact season and episode`() {
+        val episode = LocalSubtitleRuntime.contentKeyForTesting("series-a", 1, 2)
+        val nextEpisode = LocalSubtitleRuntime.contentKeyForTesting("series-a", 1, 3)
+        val otherSeason = LocalSubtitleRuntime.contentKeyForTesting("series-a", 2, 2)
+        val imported = LocalSubtitleRuntime.ImportedSubtitle(
+            "Series.S01E02.en.srt",
+            "en",
+            File("Series.S01E02.en.srt"),
+            1_000L,
+            episode
+        )
+
+        assertTrue(LocalSubtitleRuntime.belongsToContent(imported, episode))
+        assertFalse(LocalSubtitleRuntime.belongsToContent(imported, nextEpisode))
+        assertFalse(LocalSubtitleRuntime.belongsToContent(imported, otherSeason))
+    }
+
+    @Test fun `same filename can be imported independently for different videos`() {
+        val movieA = LocalSubtitleRuntime.contentKeyForTesting("movie-a", null, null)
+        val movieB = LocalSubtitleRuntime.contentKeyForTesting("movie-b", null, null)
+        val imported = LocalSubtitleRuntime.ImportedSubtitle(
+            "English.srt",
+            "en",
+            File("stored-English.srt"),
+            1_000L,
+            movieA
+        )
+
+        assertTrue(LocalSubtitleRuntime.sameImportSlot(imported, "english.SRT", movieA))
+        assertFalse(LocalSubtitleRuntime.sameImportSlot(imported, "English.srt", movieB))
+    }
+
+    @Test fun `legacy import stays hidden until claimed by its saved content`() {
+        val movieA = LocalSubtitleRuntime.contentKeyForTesting("movie-a", null, null)
+        val movieB = LocalSubtitleRuntime.contentKeyForTesting("movie-b", null, null)
+        val imported = LocalSubtitleRuntime.ImportedSubtitle(
+            "Legacy.srt",
+            "und",
+            File("Legacy.srt"),
+            1_000L,
+            ""
+        )
+
+        assertFalse(LocalSubtitleRuntime.belongsToContent(imported, movieA))
+        assertTrue(LocalSubtitleRuntime.claimOwnerIfUnassigned(imported, movieA))
+        assertTrue(LocalSubtitleRuntime.belongsToContent(imported, movieA))
+        assertFalse(LocalSubtitleRuntime.belongsToContent(imported, movieB))
+        assertFalse(LocalSubtitleRuntime.claimOwnerIfUnassigned(imported, movieB))
     }
 
     @Test fun `supported language names remain human readable`() {

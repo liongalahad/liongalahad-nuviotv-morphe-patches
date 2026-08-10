@@ -41,6 +41,8 @@ import kotlin.jvm.functions.Function1;
 public final class LocalSubtitleRuntime {
     static final String LOCAL_LANGUAGE_KEY = "!local";
     static final String LOCAL_SOURCE_LABEL = "Local";
+    static final String PICKER_CONTENT_KEY_EXTRA =
+            "io.github.liongalahad.nuviotv.localstoragesubtitles.CONTENT_KEY";
     static final int MAX_IMPORT_BYTES = 10 * 1024 * 1024;
     private static final String PREFERENCES_NAME = "morphe_patches";
     private static final String IMPORTS_PREFERENCE = "local_storage_subtitles.imports";
@@ -101,6 +103,7 @@ public final class LocalSubtitleRuntime {
             importedSelectionActive = false;
             suppressNextTransientDismiss = false;
             activeImportedUrl = null;
+            activeContentKey = null;
         }
         activeController = new WeakReference<>(controller);
     }
@@ -115,6 +118,7 @@ public final class LocalSubtitleRuntime {
             activeImportedUrl = null;
             activeContentKey = key;
         }
+        claimLegacyImportForContent(key);
     }
 
     public static void setMpvActive(boolean active) {
@@ -130,6 +134,7 @@ public final class LocalSubtitleRuntime {
         if (action != null) merged.add(action);
         synchronized (LocalSubtitleRuntime.class) {
             for (ImportedSubtitle imported : IMPORTED) {
+                if (!belongsToContent(imported, activeContentKey)) continue;
                 Object subtitle = createImportedSubtitle(imported);
                 if (subtitle != null) merged.add(subtitle);
             }
@@ -169,6 +174,13 @@ public final class LocalSubtitleRuntime {
         }
         importedSelectionActive = featureEnabled && !mpvActive;
         activeImportedUrl = importedSelectionActive ? subtitleString(subtitle, "getUrl") : null;
+        ImportedSubtitle stored = importedByUrl(activeImportedUrl);
+        if (importedSelectionActive && !belongsToContent(stored, activeContentKey)) {
+            importedSelectionActive = false;
+            activeImportedUrl = null;
+            showMessage("This local subtitle belongs to a different video");
+            return true;
+        }
         if (featureEnabled && !mpvActive) return false;
         showMessage(featureEnabled
                 ? "Local Storage subtitles are available with ExoPlayer only"
@@ -185,10 +197,18 @@ public final class LocalSubtitleRuntime {
         String key = contentKey(contentId, season, episode);
         String url = subtitleString(subtitle, "getUrl");
         if (url == null || url.trim().isEmpty()) return false;
+        ImportedSubtitle imported = importedByUrl(url);
+        if (imported == null) return false;
+        if (!hasOwner(imported)) {
+            imported.ownerContentKey = key;
+        } else if (!belongsToContent(imported, key)) {
+            importedSelectionActive = false;
+            activeImportedUrl = null;
+            return true;
+        }
         boolean newlyActive = !importedSelectionActive || !url.equals(activeImportedUrl);
         SELECTED_BY_CONTENT.put(key, url);
-        ImportedSubtitle imported = importedByUrl(url);
-        if (imported != null) imported.lastUsedAt = System.currentTimeMillis();
+        imported.lastUsedAt = System.currentTimeMillis();
         activeContentKey = key;
         activeImportedUrl = url;
         importedSelectionActive = true;
@@ -231,6 +251,14 @@ public final class LocalSubtitleRuntime {
             persistSelections();
             return null;
         }
+        if (!hasOwner(imported)) {
+            imported.ownerContentKey = key;
+            persistImports();
+        } else if (!belongsToContent(imported, key)) {
+            SELECTED_BY_CONTENT.remove(key);
+            persistSelections();
+            return null;
+        }
         activeContentKey = key;
         activeImportedUrl = selectedUrl;
         importedSelectionActive = true;
@@ -249,6 +277,19 @@ public final class LocalSubtitleRuntime {
 
     static boolean importedSelectionActiveForTesting() {
         return importedSelectionActive;
+    }
+
+    static synchronized void setImportStateForTesting(
+            ImportedSubtitle imported, String contentKey
+    ) {
+        IMPORTED.clear();
+        SELECTED_BY_CONTENT.clear();
+        if (imported != null) IMPORTED.add(imported);
+        activeContentKey = contentKey;
+        activeImportedUrl = null;
+        importedSelectionActive = false;
+        mpvActive = false;
+        featureEnabled = true;
     }
 
     /** Keeps Nuvio's saved track state from replacing a temporary local selection after Media3 refreshes. */
@@ -348,7 +389,12 @@ public final class LocalSubtitleRuntime {
         return languageFromId(subtitleString(subtitle, "getId"));
     }
 
-    static synchronized ImportedSubtitle importFile(Context context, Uri source, String displayName) throws Exception {
+    static synchronized ImportedSubtitle importFile(
+            Context context, Uri source, String displayName, String ownerContentKey
+    ) throws Exception {
+        if (ownerContentKey == null || ownerContentKey.trim().isEmpty()) {
+            throw new IllegalStateException("Playback identity is unavailable; reopen the subtitle menu and try again");
+        }
         String extension = extensionOf(displayName);
         if (!isSupportedExtension(extension)) {
             throw new IllegalArgumentException("Choose an SRT, VTT, ASS, SSA, TTML or DFXP subtitle file");
@@ -388,10 +434,10 @@ public final class LocalSubtitleRuntime {
         }
         String language = inferLanguageCode(displayName, decodeSample(sample));
         ImportedSubtitle imported = new ImportedSubtitle(
-                displayName, language, target, System.currentTimeMillis()
+                displayName, language, target, System.currentTimeMillis(), ownerContentKey
         );
         IMPORTED.removeIf(item -> {
-            if (!item.displayName.equalsIgnoreCase(displayName)) return false;
+            if (!sameImportSlot(item, displayName, ownerContentKey)) return false;
             //noinspection ResultOfMethodCallIgnored
             item.storedFile.delete();
             return true;
@@ -404,10 +450,11 @@ public final class LocalSubtitleRuntime {
     /** Selects a completed import after the picker activity has yielded focus back to playback. */
     static synchronized void selectAfterPickerReturns(ImportedSubtitle imported) {
         cancelPendingPickerSelection();
+        if (!belongsToContent(imported, activeContentKey)) return;
         Object subtitle = createImportedSubtitle(imported);
         Function1<Object, Unit> delegate = selectionDelegate.get();
         if (subtitle == null || delegate == null) return;
-        activeImportedUrl = Uri.fromFile(imported.storedFile).toString();
+        activeImportedUrl = storedFileUrl(imported.storedFile);
         importedSelectionActive = true;
         sessionAddonListRefreshPending = true;
         LocalSubtitleRefreshState.invalidate();
@@ -477,7 +524,7 @@ public final class LocalSubtitleRuntime {
     private static Object createImportedSubtitle(ImportedSubtitle imported) {
         return createSubtitle(
                 imported.languageCode + "\n" + imported.displayName,
-                Uri.fromFile(imported.storedFile).toString(),
+                storedFileUrl(imported.storedFile),
                 LOCAL_LANGUAGE_KEY,
                 LOCAL_SOURCE_LABEL,
                 imported.languageCode
@@ -490,7 +537,15 @@ public final class LocalSubtitleRuntime {
             showMessage("Unable to open the subtitle file picker");
             return;
         }
-        activity.startActivity(new Intent(activity, LocalSubtitlePickerActivity.class));
+        String contentKey = activeContentKey;
+        if (contentKey == null || contentKey.trim().isEmpty()) {
+            showMessage("Playback identity is unavailable; reopen the subtitle menu and try again");
+            return;
+        }
+        activity.startActivity(
+                new Intent(activity, LocalSubtitlePickerActivity.class)
+                        .putExtra(PICKER_CONTENT_KEY_EXTRA, contentKey)
+        );
     }
 
     private static Object createSubtitle(String id, String url, String language, String addonName, String addonLogo) {
@@ -622,14 +677,61 @@ public final class LocalSubtitleRuntime {
 
     private static String contentKey(String contentId, Integer season, Integer episode) {
         String id = contentId == null ? "" : contentId.trim();
+        if (id.isEmpty()) return "";
         return id + "|S" + (season == null ? "-" : season) + "|E" + (episode == null ? "-" : episode);
+    }
+
+    static String contentKeyForTesting(String contentId, Integer season, Integer episode) {
+        return contentKey(contentId, season, episode);
+    }
+
+    private static boolean hasOwner(ImportedSubtitle imported) {
+        return imported != null && imported.ownerContentKey != null &&
+                !imported.ownerContentKey.trim().isEmpty();
+    }
+
+    static boolean belongsToContent(ImportedSubtitle imported, String key) {
+        return hasOwner(imported) && key != null && imported.ownerContentKey.equals(key);
+    }
+
+    static boolean sameImportSlot(ImportedSubtitle imported, String displayName, String key) {
+        return belongsToContent(imported, key) && displayName != null &&
+                imported.displayName.equalsIgnoreCase(displayName);
+    }
+
+    static boolean claimOwnerIfUnassigned(ImportedSubtitle imported, String key) {
+        if (imported == null || key == null || key.trim().isEmpty()) return false;
+        if (hasOwner(imported)) return belongsToContent(imported, key);
+        imported.ownerContentKey = key;
+        return true;
+    }
+
+    /** Migrates an import created before content ownership was persisted without exposing it globally. */
+    private static synchronized void claimLegacyImportForContent(String key) {
+        if (key == null || key.trim().isEmpty()) return;
+        String selectedUrl = SELECTED_BY_CONTENT.get(key);
+        if (selectedUrl == null) return;
+        ImportedSubtitle imported = importedByUrl(selectedUrl);
+        if (imported != null && !hasOwner(imported) && claimOwnerIfUnassigned(imported, key)) {
+            persistImports();
+        }
     }
 
     private static ImportedSubtitle importedByUrl(String url) {
         for (ImportedSubtitle imported : IMPORTED) {
-            if (Uri.fromFile(imported.storedFile).toString().equals(url)) return imported;
+            if (storedFileUrl(imported.storedFile).equals(url)) return imported;
         }
         return null;
+    }
+
+    private static String storedFileUrl(File file) {
+        String path = file.getAbsolutePath().replace('\\', '/');
+        if (!path.startsWith("/")) path = "/" + path;
+        return "file://" + path;
+    }
+
+    static String storedFileUrlForTesting(File file) {
+        return storedFileUrl(file);
     }
 
     private static SharedPreferences preferences() {
@@ -664,7 +766,8 @@ public final class LocalSubtitleRuntime {
                             item.optLong(
                                     "lastUsedAt",
                                     file.lastModified() > 0L ? file.lastModified() : System.currentTimeMillis()
-                            )
+                            ),
+                            item.optString("ownerContentKey", "")
                     ));
                 }
             }
@@ -694,6 +797,7 @@ public final class LocalSubtitleRuntime {
                 item.put("languageCode", imported.languageCode);
                 item.put("storedName", imported.storedFile.getName());
                 item.put("lastUsedAt", imported.lastUsedAt);
+                item.put("ownerContentKey", imported.ownerContentKey);
                 imports.put(item);
             } catch (Throwable ignored) {
                 // Skip a malformed entry without affecting other imports.
@@ -720,7 +824,7 @@ public final class LocalSubtitleRuntime {
         ArrayList<String> removedUrls = new ArrayList<>();
         IMPORTED.removeIf(imported -> {
             if (!isExpired(imported.lastUsedAt, now)) return false;
-            removedUrls.add(Uri.fromFile(imported.storedFile).toString());
+            removedUrls.add(storedFileUrl(imported.storedFile));
             //noinspection ResultOfMethodCallIgnored
             imported.storedFile.delete();
             return true;
@@ -749,16 +853,28 @@ public final class LocalSubtitleRuntime {
         final String languageCode;
         final File storedFile;
         long lastUsedAt;
+        String ownerContentKey;
 
         ImportedSubtitle(String displayName, String languageCode, File storedFile) {
-            this(displayName, languageCode, storedFile, System.currentTimeMillis());
+            this(displayName, languageCode, storedFile, System.currentTimeMillis(), "");
         }
 
         ImportedSubtitle(String displayName, String languageCode, File storedFile, long lastUsedAt) {
+            this(displayName, languageCode, storedFile, lastUsedAt, "");
+        }
+
+        ImportedSubtitle(
+                String displayName,
+                String languageCode,
+                File storedFile,
+                long lastUsedAt,
+                String ownerContentKey
+        ) {
             this.displayName = displayName;
             this.languageCode = languageCode;
             this.storedFile = storedFile;
             this.lastUsedAt = lastUsedAt;
+            this.ownerContentKey = ownerContentKey == null ? "" : ownerContentKey;
         }
     }
 }
