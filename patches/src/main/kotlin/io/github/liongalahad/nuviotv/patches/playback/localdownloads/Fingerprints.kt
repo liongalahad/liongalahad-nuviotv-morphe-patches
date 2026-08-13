@@ -10,6 +10,7 @@ internal const val META = "Lcom/nuvio/tv/domain/model/Meta;"
 internal const val VIDEO = "Lcom/nuvio/tv/domain/model/Video;"
 private const val FUNCTION0 = "Lkotlin/jvm/functions/Function0;"
 private const val FUNCTION1 = "Lkotlin/jvm/functions/Function1;"
+private const val FUNCTION2 = "Lkotlin/jvm/functions/Function2;"
 private const val FUNCTION3 = "Lkotlin/jvm/functions/Function3;"
 private const val KOTLIN_FUNCTION = "Lkotlin/Function;"
 private const val INTEGER = "Ljava/lang/Integer;"
@@ -133,6 +134,26 @@ internal object StreamScreenFingerprint : Fingerprint(
                 FUNCTION0, FUNCTION1, FUNCTION1, "Le1/m0;", "I"
             )
         }
+    }
+)
+
+/** Coroutine used by Nuvio to retrieve addon subtitles for the selected title. */
+internal object SubtitleWorkerFingerprint : Fingerprint(
+    returnType = "Ljava/lang/Object;",
+    parameters = listOf("Ljava/lang/Object;"),
+    strings = listOf("Fetching subtitles for type=", "Subtitle fetch completed total="),
+    custom = { method, classDef ->
+        method.name == "invokeSuspend" && FUNCTION2 in classDef.interfaces &&
+            classDef.methods.any { constructor ->
+                constructor.name == "<init>" && constructor.parameterNames().let { p ->
+                    p.size == 10 && p[1] == "Ljava/lang/String;" &&
+                        p[2] == "Ljava/lang/String;" && p[3] == "Ljava/lang/String;" &&
+                        p[4] == FUNCTION3 && p[5] == FUNCTION1 &&
+                        p[6] == "Ljava/lang/String;" && p[7] == "Ljava/lang/Long;" &&
+                        p[8] == "Ljava/lang/String;" &&
+                        p[9] == "Lkotlin/coroutines/Continuation;"
+                }
+            }
     }
 )
 

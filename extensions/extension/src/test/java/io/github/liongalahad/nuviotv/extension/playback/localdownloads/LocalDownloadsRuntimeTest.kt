@@ -389,6 +389,18 @@ class LocalDownloadsRuntimeTest {
     }
 
     @Test
+    fun `patch resolved subtitle worker locates repository in stream view model`() {
+        val repository = FakeSubtitleRepository()
+        val viewModel = FakeSubtitleWorkerViewModel(repository)
+
+        assertTrue(
+            repository === LocalDownloadsRuntime.findSubtitleRepository(
+                viewModel, FakeSplitSubtitleWorker::class.java
+            )
+        )
+    }
+
+    @Test
     fun `failed transfer keeps download retry armed for the source picker`() {
         val identity = LocalDownloadsRuntime.RouteIdentity.fromRoute(
             "stream/tt1%3A1%3A1/series/Episode?contentId=tt1&contentName=Show&season=1&episode=1"
@@ -732,6 +744,9 @@ class LocalDownloadsRuntimeTest {
     }
 
     private class FakeSubtitleRepository
+
+    @Suppress("unused")
+    private class FakeSubtitleWorkerViewModel(val subtitleRepository: FakeSubtitleRepository)
 
     @Suppress("unused")
     private data class FakeMovieMeta(

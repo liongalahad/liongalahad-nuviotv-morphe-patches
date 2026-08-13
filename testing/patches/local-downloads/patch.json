@@ -37,6 +37,7 @@
     "ContinueOptionsDialogFingerprint",
     "StreamRouteFingerprint",
     "StreamScreenFingerprint",
+    "SubtitleWorkerFingerprint",
     "EpisodeCardContentFingerprint",
     "NuvioNavHostFingerprint",
     "PlayerMediaSourceFactoryFingerprint",
