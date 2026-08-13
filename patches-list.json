@@ -230,6 +230,35 @@
         }
       ],
       "options": []
+    },
+    {
+      "name": "Restore Source Selection",
+      "description": "Returns the source picker to the source played before leaving the player.",
+      "default": false,
+      "dependencies": [
+        "BytecodePatch",
+        "ResourcePatch"
+      ],
+      "compatiblePackages": [
+        {
+          "packageName": "com.nuvio.tv",
+          "name": "NuvioTV",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#111827",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "0.8.4-beta",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
     }
   ]
 }
