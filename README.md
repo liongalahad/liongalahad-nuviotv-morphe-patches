@@ -45,7 +45,7 @@ Validation includes 147 extension tests, isolated application of all eight patch
 ## Available patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.0.0-dev.18](https://github.com/liongalahad/nuviotv-morphe-patches/releases/tag/v1.0.0-dev.18)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;8 patches total
+> **[v1.0.0-dev.19](https://github.com/liongalahad/nuviotv-morphe-patches/releases/tag/v1.0.0-dev.19)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;8 patches total
 <details open>
 <summary>📦 NuvioTV&nbsp;&nbsp;•&nbsp;&nbsp;8 patches</summary>
 <br>
