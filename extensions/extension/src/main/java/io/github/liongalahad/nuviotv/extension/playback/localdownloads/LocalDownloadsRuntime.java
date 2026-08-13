@@ -85,6 +85,7 @@ public final class LocalDownloadsRuntime {
     private static volatile boolean playbackActive;
     private static volatile WeakReference<Object> streamViewModel = new WeakReference<>(null);
     private static volatile Object subtitleRepository;
+    private static volatile Class<?> subtitleWorkerClass;
     private static volatile DownloadedEntry pendingDelete;
     private static boolean entryActionOpenOrLaunching;
     private static volatile Object navController;
@@ -160,6 +161,13 @@ public final class LocalDownloadsRuntime {
         streamViewModel = new WeakReference<>(viewModel);
         Object repository = findSubtitleRepository(viewModel);
         if (repository != null) subtitleRepository = repository;
+    }
+
+    /** Receives the exact obfuscated worker class resolved by the patch for this APK build. */
+    public static void observeSubtitleWorkerClass(Class<?> workerClass) {
+        if (workerClass == null || workerClass == subtitleWorkerClass) return;
+        subtitleWorkerClass = workerClass;
+        Log.i(TAG, "Captured subtitle worker " + workerClass.getName());
     }
 
     public static void observeNavController(Object controller) {
@@ -363,16 +371,13 @@ public final class LocalDownloadsRuntime {
     private static Object createSubtitleWorker(
             Object repository, DownloadRequest request, long actualVideoSize
     ) throws Exception {
-        for (String className : SUBTITLE_WORKER_CLASS_NAMES) {
-            Class<?> workerClass;
-            try { workerClass = Class.forName(className); }
-            catch (ClassNotFoundException ignored) { continue; }
+        for (Class<?> workerClass : subtitleWorkerClasses()) {
             for (Constructor<?> constructor : workerClass.getDeclaredConstructors()) {
                 Object[] arguments = subtitleWorkerArguments(
                         constructor, repository, request, actualVideoSize);
                 if (arguments == null) continue;
                 constructor.setAccessible(true);
-                Log.i(TAG, "Using subtitle worker " + className +
+                Log.i(TAG, "Using subtitle worker " + workerClass.getName() +
                         " with " + arguments.length + " constructor parameters");
                 return constructor.newInstance(arguments);
             }
@@ -651,17 +656,22 @@ public final class LocalDownloadsRuntime {
 
     private static Object findSubtitleRepository(Object viewModel) {
         if (viewModel == null) return null;
+        for (Class<?> workerClass : subtitleWorkerClasses()) {
+            Object repository = findSubtitleRepository(viewModel, workerClass);
+            if (repository != null) return repository;
+        }
+        Log.w(TAG, "Subtitle repository is unavailable for this APK architecture");
+        return null;
+    }
+
+    static Object findSubtitleRepository(Object viewModel, Class<?> workerClass) {
+        if (viewModel == null || workerClass == null) return null;
         LinkedHashSet<Class<?>> repositoryClasses = new LinkedHashSet<>();
-        for (String className : SUBTITLE_WORKER_CLASS_NAMES) {
-            try {
-                Class<?> workerClass = Class.forName(className);
-                for (Constructor<?> constructor : workerClass.getDeclaredConstructors()) {
-                    Class<?>[] parameters = constructor.getParameterTypes();
-                    if (parameters.length == 9 || parameters.length == 10) {
-                        repositoryClasses.add(parameters[0]);
-                    }
-                }
-            } catch (ClassNotFoundException ignored) { }
+        for (Constructor<?> constructor : workerClass.getDeclaredConstructors()) {
+            Class<?>[] parameters = constructor.getParameterTypes();
+            if (parameters.length == 9 || parameters.length == 10) {
+                repositoryClasses.add(parameters[0]);
+            }
         }
         for (Class<?> repositoryClass : repositoryClasses) {
             for (Class<?> owner = viewModel.getClass(); owner != null;
@@ -673,15 +683,25 @@ public final class LocalDownloadsRuntime {
                         Object candidate = field.get(viewModel);
                         if (candidate != null && repositoryClass.isInstance(candidate)) {
                             Log.i(TAG, "Resolved subtitle repository " +
-                                    repositoryClass.getName());
+                                    repositoryClass.getName() + " from " +
+                                    viewModel.getClass().getName());
                             return candidate;
                         }
                     } catch (Throwable ignored) { }
                 }
             }
         }
-        Log.w(TAG, "Subtitle repository is unavailable for this APK architecture");
         return null;
+    }
+
+    private static List<Class<?>> subtitleWorkerClasses() {
+        LinkedHashSet<Class<?>> result = new LinkedHashSet<>();
+        if (subtitleWorkerClass != null) result.add(subtitleWorkerClass);
+        for (String className : SUBTITLE_WORKER_CLASS_NAMES) {
+            try { result.add(Class.forName(className)); }
+            catch (ClassNotFoundException ignored) { }
+        }
+        return new ArrayList<>(result);
     }
 
     private static String emptyToNull(String value) {

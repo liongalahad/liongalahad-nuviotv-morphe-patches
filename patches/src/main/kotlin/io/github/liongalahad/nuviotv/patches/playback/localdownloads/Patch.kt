@@ -165,6 +165,7 @@ val localdownloadsPatch = bytecodePatch(
             ContinueOptionsDialogFingerprint,
             StreamRouteFingerprint,
             StreamScreenFingerprint,
+            SubtitleWorkerFingerprint,
             NuvioNavHostFingerprint,
             PlayerMediaSourceFactoryFingerprint,
             FullscreenPlaybackStateListenerFingerprint
@@ -266,10 +267,13 @@ val localdownloadsPatch = bytecodePatch(
                 }
         }
 
+        val subtitleWorkerType = SubtitleWorkerFingerprint.classDef.type
         StreamScreenFingerprint.method.addInstructions(
             0,
             """
                 move-object/from16 v0, p0
+                const-class v1, $subtitleWorkerType
+                invoke-static/range { v1 .. v1 }, $RUNTIME->observeSubtitleWorkerClass(Ljava/lang/Class;)V
                 invoke-static/range { v0 .. v0 }, $RUNTIME->observeStreamViewModel(Ljava/lang/Object;)V
                 move-object/from16 v0, p2
                 invoke-static/range { v0 .. v0 }, $RUNTIME->wrapResolvedCallback(Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function1;
