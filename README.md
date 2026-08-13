@@ -49,7 +49,7 @@ Validation includes 158 extension tests, isolated application across the officia
 ## Available patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.0.0-dev.19](https://github.com/liongalahad/nuviotv-morphe-patches/releases/tag/v1.0.0-dev.19)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;9 patches total
+> **[v1.0.0-dev.20](https://github.com/liongalahad/nuviotv-morphe-patches/releases/tag/v1.0.0-dev.20)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;9 patches total
 <details open>
 <summary>📦 NuvioTV&nbsp;&nbsp;•&nbsp;&nbsp;9 patches</summary>
 <br>
@@ -64,12 +64,12 @@ Validation includes 158 extension tests, isolated application across the officia
 | [Random Episode](testing/patches/random-episode/README.md) | Adds Morphe > Detail Page > Show Random Episode Button and random series playback.<br>Original idea and code by [**DeclanSC**](https://github.com/DeclanSC). |  |
 | [Local Media](testing/patches/local-media/README.md) | Adds Library > Storage playback, folder selection, and same-basename sidecar subtitles for local video files. |  |
 | [Local Downloads](testing/patches/local-downloads/README.md) | Downloads selected direct movie and episode sources to local storage for exact local playback. |  |
-| [Restore Source Selection](testing/patches/source-selection-restore/README.md) | Returns the source picker to the source played before leaving the player. |  |
 | [Rating Visibility](testing/patches/ratings-visibility/README.md) | Adds Settings > Morphe > Ratings with independent overall and episode rating controls. |  |
 | [Remove SDH Annotations](testing/patches/sdh-annotations/README.md) | Adds Settings → Morphe → Subtitles and removes SDH annotations from Media3 subtitles when enabled. |  |
 | [Mark SDH Subtitles](testing/patches/sdh-marking/README.md) | Marks explicitly labelled SDH tracks and detected English SDH subtitle files. |  |
 | [Allow Importing Subs from Local Storage](testing/patches/local-storage-subtitles/README.md) | Imports device subtitle files into Nuvio's ExoPlayer subtitle menu without rebuilding active playback. |  |
 | [Library Mode Focus Fix](testing/patches/library-mode-focus-fix/README.md) | Returns Library focus to the previously selected Saved or Cloud mode. |  |
+| [Restore Source Selection](#restore-source-selection) | Returns the source picker to the source played before leaving the player. |  |
 
 </details>
 

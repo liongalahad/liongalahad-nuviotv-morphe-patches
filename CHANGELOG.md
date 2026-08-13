@@ -1,3 +1,13 @@
+## [1.0.0-dev.20](https://github.com/liongalahad/nuviotv-morphe-patches/compare/v1.0.0-dev.19...v1.0.0-dev.20) (2026-08-13)
+
+### 🐛 Bug Fixes
+
+* resolve subtitle workers across architectures ([f288334](https://github.com/liongalahad/nuviotv-morphe-patches/commit/f28833422cbcb47975346743a93e08ad23698c77))
+
+### ✨ New Features
+
+* restore source picker selection ([e6d2a79](https://github.com/liongalahad/nuviotv-morphe-patches/commit/e6d2a79dc54d5bfec08b28278d9a98151d87d764))
+
 ## [1.0.0-dev.19](https://github.com/liongalahad/nuviotv-morphe-patches/compare/v1.0.0-dev.18...v1.0.0-dev.19) (2026-08-13)
 
 ### ✨ New Features
