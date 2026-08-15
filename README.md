@@ -22,7 +22,7 @@ The SDH cleanup patch provides `Off`, `Remove SDH, keep lyrics`, and `Full clean
 3. Enable prerelease patches while the bundle remains on `dev`.
 4. Import the official [NuvioTV 0.8.4-beta APK](https://github.com/NuvioMedia/NuvioTV/releases/tag/0.8.4-beta) for the target ABI, or the official universal APK.
 5. Select the patch to test. Use the dedicated local test signing identity for repeatable test upgrades.
-6. Sideload and install on your TV. The official app cannot be upgraded in place because the patched APK has a different signature.
+6. Save patched APK locally, sideload and install on your TV. The official app cannot be upgraded in place because the patched APK has a different signature.
 
 Deep link: `https://morphe.software/add-source?github=liongalahad/nuviotv-morphe-patches`
 
