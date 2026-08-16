@@ -49,7 +49,7 @@ Validation includes 181 extension tests plus patcher-level manifest tests, isola
 ## Available patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.0.0-dev.20](https://github.com/liongalahad/nuviotv-morphe-patches/releases/tag/v1.0.0-dev.20)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;10 patches total
+> **[v1.0.0-dev.21](https://github.com/liongalahad/nuviotv-morphe-patches/releases/tag/v1.0.0-dev.21)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;10 patches total
 <details open>
 <summary>📦 NuvioTV&nbsp;&nbsp;•&nbsp;&nbsp;10 patches</summary>
 <br>
