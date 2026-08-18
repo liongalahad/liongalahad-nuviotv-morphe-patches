@@ -93,3 +93,13 @@
 - The final all-eight universal side-by-side APK is package `com.nuvio.morphe`, label `Nuvio Morphe`, contains all four native ABIs and seven unique renamed authorities, is zip-aligned and v2/v3 signed, installs beside `com.nuvio.tv`, and was copied byte-for-byte to `G:\My Drive`. SHA-256: `10A1F072BEE21F8127DA1031BEB002C0D6D8940CE45294D02B4CDDA9A055C62C`.
 - Follow-up short-press testing found that the file-row hook had been inserted after its model register was reused as an integer key, causing Android to reject `na.y` with a `VerifyError` when a folder opened. The hook now captures the exact `y8.a` model immediately after its checked cast, before any register reuse.
 - On the corrected all-eight x86_64 build, short-pressing `Fist of the North Star` opened its native file dialog and one Back restored the Storage grid. Timed three-second holds still opened `Delete Folder` and `Delete File` at the 750 ms sample before release, and one Back dismissed each action. The complete run contained no app fatal exception or `VerifyError`.
+
+## NuvioTV 0.8.5-beta automated port evidence
+
+- [x] The 198-test extension suite passed with zero failures, errors, or skips.
+- [x] This patch applied alone with an exact single match on x86_64, arm64-v8a, armeabi-v7a, and universal official APKs.
+- [x] Each isolated output passed SHA-256 input verification plus post-patch manifest, injected-class, and forbidden-type inspection.
+- [x] The combined ten-patch x86_64 and universal builds applied without a failed patch and passed APK signature and alignment verification.
+- [x] The combined x86_64 side-by-side build installed and launched on `Television_4K`; its process remained alive with no startup `FATAL EXCEPTION`, `VerifyError`, or package ANR.
+- [ ] Patch-specific D-pad, persistence, navigation, playback, and media behavior remains manual and is not marked passed by this automated port.
+- [ ] Real Android TV acceptance remains pending.

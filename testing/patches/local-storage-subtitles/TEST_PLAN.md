@@ -25,3 +25,13 @@
 - A follow-up controller-lifecycle regression verifies that a released prior controller does not leave transient local state attached to the next player. A second regression verifies that later native reconciliation remains blocked after the local restore has already been handled.
 - On the TV AVD, Widow's Bay S1E2 was launched twice. Each launch loaded saved subtitle `v5`, selected `addon=Local lang=!local`, used the buffer-preserving sidecar path, and reached `Sidecar subtitle ready id=und`; neither launch logged a later English selection or native English fallback.
 - The complete extension suite passed 133 tests with zero failures, errors or skips, and the final all-eight x86_64/universal bundles applied every patch with no failed patch.
+
+## NuvioTV 0.8.5-beta automated port evidence
+
+- [x] The 198-test extension suite passed with zero failures, errors, or skips.
+- [x] This patch applied alone with an exact single match on x86_64, arm64-v8a, armeabi-v7a, and universal official APKs.
+- [x] Each isolated output passed SHA-256 input verification plus post-patch manifest, injected-class, and forbidden-type inspection.
+- [x] The combined ten-patch x86_64 and universal builds applied without a failed patch and passed APK signature and alignment verification.
+- [x] The combined x86_64 side-by-side build installed and launched on `Television_4K`; its process remained alive with no startup `FATAL EXCEPTION`, `VerifyError`, or package ANR.
+- [ ] Patch-specific D-pad, persistence, navigation, playback, and media behavior remains manual and is not marked passed by this automated port.
+- [ ] Real Android TV acceptance remains pending.
