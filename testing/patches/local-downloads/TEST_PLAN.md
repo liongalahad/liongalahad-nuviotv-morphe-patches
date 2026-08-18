@@ -129,3 +129,10 @@
 - [x] The combined x86_64 side-by-side build installed and launched on `Television_4K`; its process remained alive with no startup `FATAL EXCEPTION`, `VerifyError`, or package ANR.
 - [ ] Patch-specific D-pad, persistence, navigation, playback, and media behavior remains manual and is not marked passed by this automated port.
 - [ ] Real Android TV acceptance remains pending.
+
+## 2026-08-18 NuvioTV 0.8.5-beta settings regression evidence
+
+- Expanding Morphe > Playback in the first combined port crashed because Nuvio 0.8.5 moved the native Timer icon factory from `x0.e.v()` to `x0.d.v()`. The Local Downloads settings compartment now discovers the static zero-argument Timer-icon factory from the supported native icon owners.
+- The final ten-patch x86_64 build expanded Playback, rendered Restore source selection, Local Downloads and Allow local downloads, and retained a live process with no slider-render failure, `NoSuchMethodException` or fatal exception.
+- Local Downloads was reapplied alone after the fix on x86_64, arm64-v8a, armeabi-v7a and universal. The complete x86_64 and universal outputs applied all ten patches with no failure and passed alignment/signature verification.
+- Live source discovery and a new network download were not repeated in this emulator pass; those behaviors remain covered by the existing unit and prior Android TV evidence. Real Android TV acceptance remains pending.

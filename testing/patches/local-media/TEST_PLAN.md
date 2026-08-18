@@ -103,3 +103,11 @@
 - [x] The combined x86_64 side-by-side build installed and launched on `Television_4K`; its process remained alive with no startup `FATAL EXCEPTION`, `VerifyError`, or package ANR.
 - [ ] Patch-specific D-pad, persistence, navigation, playback, and media behavior remains manual and is not marked passed by this automated port.
 - [ ] Real Android TV acceptance remains pending.
+
+## 2026-08-18 NuvioTV 0.8.5-beta runtime regression evidence
+
+- The original port crashed when Library opened because it still constructed 0.8.4-obfuscated Compose and library model types. The patch now discovers the target's native button, text, search, card, dialog, empty-state, icon, cloud-item and file-model owners before configuring the isolated Local Media runtime.
+- On `Television_4K`, the final ten-patch x86_64 build opened Library Saved, Cloud and Storage, rendered the storage search and folder/file rows, opened `Movies`, and displayed its native file-choice dialog without a fatal exception or `NoWhenBranchMatchedException`.
+- `Storage.Movie.Sample.mkv` and `Nuvio.Local.Media.Sample.mkv` both reached visible H.264 playback. The final playback logs contain no app fatal, `VerifyError`, `PlaybackException` or `ExoPlaybackException`.
+- The final 0.8.5-beta Local Media patch applied alone on x86_64, arm64-v8a, armeabi-v7a and universal. The complete ten-patch x86_64 and universal outputs applied all ten patches with no failure and passed alignment/signature verification.
+- Real Android TV acceptance remains pending because no physical TV was connected to this workspace.

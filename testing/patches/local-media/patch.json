@@ -35,6 +35,8 @@
     "LibraryGridContentFingerprint",
     "LibrarySourceLabelFingerprint",
     "CloudSearchLabelFingerprint",
+    "NativeLibraryEmptyStateFingerprint",
+    "NativeLibraryEmptyContentFingerprint",
     "MainActivityKeyEventFingerprint",
     "ComposeDialogTouchEventFingerprint",
     "CloudStorageCardFingerprint",
