@@ -92,8 +92,9 @@ val removeSdhAnnotationsPatch = bytecodePatch(
             }
             val listRegister = (cueListRead.value as? TwoRegisterInstruction)?.registerA
                 ?: error("CueGroup cue-list read has no destination register")
-            check(listRegister == 0 && implementation!!.registerCount >= 7) {
-                "CueGroup callback no longer exposes the expected safe scratch registers"
+            check(listRegister == 2 && implementation!!.registerCount == 7) {
+                "CueGroup callback no longer has the verified 0.8.5 register layout: " +
+                    "list=v$listRegister, registerCount=${implementation!!.registerCount}"
             }
             val presentationTimeField = instructions.mapNotNull { instruction ->
                 if (instruction.opcode != Opcode.IGET_WIDE) return@mapNotNull null
@@ -134,12 +135,12 @@ val removeSdhAnnotationsPatch = bytecodePatch(
                 cueListRead.index + 1,
                 """
                     invoke-static { v$listRegister }, $CUE_TRANSFORMER->clean(Ljava/util/List;)Ljava/util/List;
-                    move-result-object v1
-                    if-eq v$listRegister, v1, :morphe_sdh_group_unchanged
-                    iget-wide v2, p1, $presentationTimeDescriptor
-                    new-instance v4, $CUE_GROUP
-                    invoke-direct { v4, v1, v2, v3 }, $CUE_GROUP-><init>(Ljava/util/List;J)V
-                    move-object p1, v4
+                    move-result-object v0
+                    if-eq v$listRegister, v0, :morphe_sdh_group_unchanged
+                    iget-wide v1, p1, $presentationTimeDescriptor
+                    new-instance v3, $CUE_GROUP
+                    invoke-direct { v3, v0, v1, v2 }, $CUE_GROUP-><init>(Ljava/util/List;J)V
+                    move-object p1, v3
                     :morphe_sdh_group_unchanged
                     nop
                 """
