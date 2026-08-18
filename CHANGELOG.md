@@ -1,3 +1,9 @@
+## [1.0.0-dev.23](https://github.com/liongalahad/nuviotv-morphe-patches/compare/v1.0.0-dev.22...v1.0.0-dev.23) (2026-08-18)
+
+### 🐛 Bug Fixes
+
+* release corrected Morphe settings header ([4a31937](https://github.com/liongalahad/nuviotv-morphe-patches/commit/4a31937e0f272280cb2e759849d4e62e6f8bf65c))
+
 ## [1.0.0-dev.22](https://github.com/liongalahad/nuviotv-morphe-patches/compare/v1.0.0-dev.21...v1.0.0-dev.22) (2026-08-18)
 
 ### ✨ New Features
