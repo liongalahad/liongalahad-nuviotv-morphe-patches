@@ -1,3 +1,9 @@
+## [1.0.0-dev.24](https://github.com/liongalahad/nuviotv-morphe-patches/compare/v1.0.0-dev.23...v1.0.0-dev.24) (2026-08-18)
+
+### 🐛 Bug Fixes
+
+* repair Nuvio 0.8.5 runtime compatibility ([d493069](https://github.com/liongalahad/nuviotv-morphe-patches/commit/d4930694efde4faba33101b05bb58a899cbbabcb))
+
 ## [1.0.0-dev.23](https://github.com/liongalahad/nuviotv-morphe-patches/compare/v1.0.0-dev.22...v1.0.0-dev.23) (2026-08-18)
 
 ### 🐛 Bug Fixes
