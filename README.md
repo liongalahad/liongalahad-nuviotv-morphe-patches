@@ -1,6 +1,6 @@
 # NuvioTV Morphe Patches
 
-Public Morphe patch source for the official NuvioTV Android application. The ten current source patches target only `com.nuvio.tv` `0.8.5-beta`.
+Public Morphe patch source for the official NuvioTV Android application. The ten current source patches target only `com.nuvio.tv` `0.8.6-beta`.
 
 This repository distributes patch code and `.mpp` bundles. It never distributes original, patched, or modified NuvioTV APKs.
 
@@ -20,7 +20,7 @@ The SDH cleanup patch provides `Off`, `Normalize music symbols only`, `Remove SD
 1. Download and install [Morphe Manager](https://morphe.software/) on your phone or TV.
 2. Add `github.com/liongalahad/nuviotv-morphe-patches` as a GitHub patch source. No GitHub PAT is required because the repository is public.
 3. Enable prerelease patches while the bundle remains on `dev`.
-4. Import the official [NuvioTV 0.8.5-beta APK](https://github.com/NuvioMedia/NuvioTV/releases/tag/0.8.5-beta) for the target ABI, or the official universal APK.
+4. Import the official [NuvioTV 0.8.6-beta APK](https://github.com/NuvioMedia/NuvioTV/releases/tag/0.8.6-beta) for the target ABI, or the official universal APK.
 5. Select the patches to apply. `Side-by-side installation` is selected by default and produces package `com.nuvio.morphe` with label `Nuvio Morphe`; deselect it only when replacement-install behavior is intended.
 6. Save the patched APK locally, then sideload and install it on your TV. The default side-by-side output installs beside the official app. A replacement output cannot upgrade the official app in place because the patched APK has a different signature.
 
@@ -40,11 +40,11 @@ Every run is isolated under `local/patches/<patch-id>/<timestamp>/`. See [Window
 
 `testing/patches/<patch-id>/` is the source of truth for each patch's target assets, fingerprints, inspection requirements, acceptance criteria, porting notes, and focused test plan. `patches-list.json` and the table below are regenerated from the built bundle.
 
-## NuvioTV 0.8.5 compatibility
+## NuvioTV 0.8.6 compatibility
 
-All ten patch compartments target the official `0.8.5-beta` universal and ABI-specific APKs. This port also moves focus from the Morphe entry into its first visible settings category and resolves NuvioTV's native switch, selector, and storage-slider implementations structurally, without relying on a single obfuscated owner name.
+All ten patch compartments target the official `0.8.6-beta` universal and ABI-specific APKs. This port revalidates every structural fingerprint and updates the version-pinned native settings bridges that moved in NuvioTV 0.8.6.
 
-Validation includes 198 extension tests plus patcher-level manifest tests, isolated application across all four declared official APK variants, combined Android TV startup coverage, and combined x86_64/universal APK signature, alignment, manifest, DEX, and ABI inspection. Manual feature behavior remains pending until exercised on the target device. Generated APKs and runtime evidence remain under ignored `local/` paths and are never committed.
+Validation includes 198 extension tests plus three patcher-level manifest tests, isolated application across all four declared official APK variants, combined Android TV settings and Library traversal, H.264 local playback through Media3, end-of-file return to Storage, and combined x86_64/universal APK signature, alignment, manifest, DEX, and ABI inspection. External-service, removable-storage, and real-TV acceptance checks remain manual. Generated APKs and runtime evidence remain under ignored `local/` paths and are never committed.
 
 ## Available patches
 

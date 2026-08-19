@@ -6,7 +6,7 @@
   "target": {
     "application": "NuvioTV",
     "package": "com.nuvio.tv",
-    "versions": ["0.8.5-beta"],
+    "versions": ["0.8.6-beta"],
     "launchComponent": "com.nuvio.tv/.MainActivity"
   },
   "output": {
@@ -16,20 +16,20 @@
   },
   "assets": {
     "universal": {
-      "url": "https://github.com/NuvioMedia/NuvioTV/releases/download/0.8.5-beta/app-full-universal-release.apk",
-      "sha256": "3086f7bba316594d6cd59389ec5172331748ea9d5921e3e9d3adcf30ec15fc3e"
+      "url": "https://github.com/NuvioMedia/NuvioTV/releases/download/0.8.6-beta/app-full-universal-release.apk",
+      "sha256": "9bc77c9be627885f5ab44e0b218d5dd3084b97cef0efdc70bcb497200cc48e2e"
     },
     "x86_64": {
-      "url": "https://github.com/NuvioMedia/NuvioTV/releases/download/0.8.5-beta/app-full-x86_64-release.apk",
-      "sha256": "f8a055473bf7a627cec509b2978905694a10bcc11a13f9fe34970b3c2e12d2bd"
+      "url": "https://github.com/NuvioMedia/NuvioTV/releases/download/0.8.6-beta/app-full-x86_64-release.apk",
+      "sha256": "4f7b03074ee704e06581d42b32093e17454a6a1e3aaaa0135c9ab513367fbbe8"
     },
     "arm64-v8a": {
-      "url": "https://github.com/NuvioMedia/NuvioTV/releases/download/0.8.5-beta/app-full-arm64-v8a-release.apk",
-      "sha256": "a34d12fac7cb8f157b3c033af292e6a5aca547a5f8daa956397cecc9328c83bf"
+      "url": "https://github.com/NuvioMedia/NuvioTV/releases/download/0.8.6-beta/app-full-arm64-v8a-release.apk",
+      "sha256": "7a3b0bdb8cc605b0711000a35acee9bc2a37dc1d765fda71f31706910ae4fd33"
     },
     "armeabi-v7a": {
-      "url": "https://github.com/NuvioMedia/NuvioTV/releases/download/0.8.5-beta/app-full-armeabi-v7a-release.apk",
-      "sha256": "bf3674f0aad80f0c477bdb899181c9029c66b81871eb96025493a238a8a654e1"
+      "url": "https://github.com/NuvioMedia/NuvioTV/releases/download/0.8.6-beta/app-full-armeabi-v7a-release.apk",
+      "sha256": "c9e54a72d1f53705d33ed3c6dd704bf5fc8d08b1e4f9aa4055651975f56087b2"
     }
   },
   "dependencies": [],

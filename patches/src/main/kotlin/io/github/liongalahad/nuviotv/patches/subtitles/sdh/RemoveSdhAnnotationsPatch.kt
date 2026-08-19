@@ -93,7 +93,7 @@ val removeSdhAnnotationsPatch = bytecodePatch(
             val listRegister = (cueListRead.value as? TwoRegisterInstruction)?.registerA
                 ?: error("CueGroup cue-list read has no destination register")
             check(listRegister == 2 && implementation!!.registerCount == 7) {
-                "CueGroup callback no longer has the verified 0.8.5 register layout: " +
+                "CueGroup callback no longer has the verified 0.8.6 register layout: " +
                     "list=v$listRegister, registerCount=${implementation!!.registerCount}"
             }
             val presentationTimeField = instructions.mapNotNull { instruction ->
