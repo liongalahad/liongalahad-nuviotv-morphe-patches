@@ -49,14 +49,14 @@ Automated validation covers extension and patcher tests, isolated application ac
 ## Available patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.0.0-dev.25](https://github.com/liongalahad/nuviotv-morphe-patches/releases/tag/v1.0.0-dev.25)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;10 patches total
+> **[v1.0.0-dev.26](https://github.com/liongalahad/nuviotv-morphe-patches/releases/tag/v1.0.0-dev.26)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;9 patches total
 <details open>
-<summary>📦 NuvioTV&nbsp;&nbsp;•&nbsp;&nbsp;10 patches</summary>
+<summary>📦 NuvioTV&nbsp;&nbsp;•&nbsp;&nbsp;9 patches</summary>
 <br>
 
 **🎯 Supported versions:**
 
-| 0.8.6-beta |
+| 0.8.7-beta |
 | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
@@ -65,7 +65,6 @@ Automated validation covers extension and patcher tests, isolated application ac
 | [Random Episode](testing/patches/random-episode/README.md) | Adds Morphe > Detail Page > Show Random Episode Button and random series playback.<br>Original idea and code by [**DeclanSC**](https://github.com/DeclanSC). |  |
 | [Local Media](testing/patches/local-media/README.md) | Adds Library > Storage playback, folder selection, and same-basename sidecar subtitles for local video files. |  |
 | [Local Downloads](testing/patches/local-downloads/README.md) | Downloads selected direct movie and episode sources to local storage for exact local playback. |  |
-| [Rating Visibility](testing/patches/ratings-visibility/README.md) | Adds Settings > Morphe > Ratings with independent overall and episode rating controls. |  |
 | [Remove SDH Annotations](testing/patches/sdh-annotations/README.md) | Adds Settings → Morphe → Subtitles to normalize music symbols and remove SDH annotations from Media3 subtitles. |  |
 | [Mark SDH Subtitles](testing/patches/sdh-marking/README.md) | Marks explicitly labelled SDH tracks and detected English SDH subtitle files. |  |
 | [Allow Importing Subs from Local Storage](testing/patches/local-storage-subtitles/README.md) | Imports device subtitle files into Nuvio's ExoPlayer subtitle menu without rebuilding active playback. |  |
