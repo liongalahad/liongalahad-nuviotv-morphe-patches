@@ -1,3 +1,9 @@
+## [1.0.0-dev.28](https://github.com/liongalahad/nuviotv-morphe-patches/compare/v1.0.0-dev.27...v1.0.0-dev.28) (2026-08-24)
+
+### 🐛 Bug Fixes
+
+* publish Android-compatible patch bundles ([85c5119](https://github.com/liongalahad/nuviotv-morphe-patches/commit/85c5119028d62d66b8600f36f6c588afa1d1c34d))
+
 ## [1.0.0-dev.27](https://github.com/liongalahad/nuviotv-morphe-patches/compare/v1.0.0-dev.26...v1.0.0-dev.27) (2026-08-24)
 
 ### 🐛 Bug Fixes
