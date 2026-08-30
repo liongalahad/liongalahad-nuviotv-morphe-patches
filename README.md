@@ -67,7 +67,7 @@ Automated validation covers 239 extension tests, 544 patcher tests (543 passed a
 | [Random Episode](testing/patches/random-episode/README.md) | Adds Morphe > Detail Page > Show Random Episode Button and random series playback.<br>Original idea and code by [**DeclanSC**](https://github.com/DeclanSC). |  |
 | [Local Media](testing/patches/local-media/README.md) | Adds Library > Storage playback, folder selection, and same-basename sidecar subtitles for local video files. |  |
 | [Local Downloads](testing/patches/local-downloads/README.md) | Downloads selected direct movie and episode sources to local storage for exact local playback. |  |
-| [Remove SDH Annotations](testing/patches/sdh-annotations/README.md) | Adds Settings → Morphe → Subtitles to normalize music symbols and remove SDH annotations from Media3 subtitles. |  |
+| [SDH Annotations Controls](testing/patches/sdh-annotations/README.md) | Adds Settings → Morphe → Subtitles to normalize music symbols and remove SDH annotations from Media3 subtitles. |  |
 | [Mark SDH Subtitles](testing/patches/sdh-marking/README.md) | Marks explicitly labelled SDH tracks and detected English SDH subtitle files. |  |
 | [Allow Importing Subs from Local Storage](testing/patches/local-storage-subtitles/README.md) | Imports device subtitle files into Nuvio's ExoPlayer subtitle menu without rebuilding active playback. |  |
 
