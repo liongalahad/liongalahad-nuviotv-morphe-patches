@@ -120,7 +120,7 @@
     },
     {
       "name": "Random Episode",
-      "description": "Adds Morphe > Detail Page > Show Random Episode Button and random series playback.",
+      "description": "Adds persistent per-show random playback with All or Unwatched episode pools.",
       "default": false,
       "dependencies": [
         "BytecodePatch",
