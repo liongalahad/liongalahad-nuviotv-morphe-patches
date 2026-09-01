@@ -38,7 +38,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with: {fetch-depth: 0}
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with: {distribution: temurin, java-version: '21'}
       - name: Configure Morphe package credentials
         shell: pwsh
