@@ -12,4 +12,4 @@ Settings translations were checked in English, Spanish, Italian, German, French,
 
 ## Limits
 
-This is an emulator-tested development build for physical-TV acceptance, not a stable release certification. No physical-TV, commercial-account streaming, long-duration soak or public Morphe Manager release validation was performed. No `.mpp` was published.
+This is an emulator-tested development build for physical-TV acceptance, not a stable release certification. Physical-TV, commercial-account streaming and long-duration soak acceptance remain outstanding. These runtime checks preceded publication; see [public release Manager validation](../../../validation/1.0.0-beta.1-manager.md) for the subsequent release gate.
