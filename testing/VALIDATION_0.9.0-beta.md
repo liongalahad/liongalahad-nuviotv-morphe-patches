@@ -1,6 +1,6 @@
 # NuvioTV Morphe 0.9.0-beta validation — 2026-09-05
 
-The official [NuvioTV 0.9.0-beta release](https://github.com/NuvioMedia/NuvioTV/releases/tag/0.9.0-beta) was ported with all seven existing patches. Source changes were prepared for 1.0.0-beta.1, based on e52aa299332a6bf9a0f24cdaae2a523d45423a10. This is a development APK for physical-TV acceptance. No GitHub release or public .mpp was published.
+The official [NuvioTV 0.9.0-beta release](https://github.com/NuvioMedia/NuvioTV/releases/tag/0.9.0-beta) was ported with all seven existing patches. Source changes were prepared for 1.0.0-beta.1, based on e52aa299332a6bf9a0f24cdaae2a523d45423a10. This is a development APK for physical-TV acceptance. These runtime checks preceded publication; release-asset Manager validation is recorded separately in validation/1.0.0-beta.1-manager.md.
 
 ## Final ARM32 artifact
 
