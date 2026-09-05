@@ -1,86 +1,87 @@
-# 👋🧩 Morphe Patches template
+# NuvioTV Morphe Patches
 
-Template repository for Morphe Patches.
+Public Morphe patch source for the official NuvioTV Android application. The seven current source patches target only `com.nuvio.tv` `0.9.0-beta`.
 
-## ❓ About
+This repository distributes patch code and `.mpp` bundles. It never distributes original, patched, or modified NuvioTV APKs.
 
-Patches for apps I like.
+> [!WARNING]
+> **All patches in this repository are prerelease work in progress.** They are not fully tested and may disrupt NuvioTV features or cause unexpected behavior. Use them only if you understand and accept this risk. Testers can share feedback and report bugs, regressions, or other malfunctions by [opening a GitHub issue](https://github.com/liongalahad/liongalahad-nuviotv-morphe-patches/issues/new/choose). Do not attach original, patched, or modified NuvioTV APKs to an issue.
 
-TODO: Update this about section with a brief introduction/summary about this repo and what it offers.
+The suite adds a default-selected side-by-side install identity, local-media playback, direct local downloads, storage subtitle imports, SDH detection and cleanup, and random-episode playback. Each optional patch owns its settings, state, runtime logic, tests, manifest registration, and documentation. Shared code is limited to generic infrastructure required by multiple patches.
 
-## 🩹 Patches list
+NuvioTV 0.8.10 now provides source-selection restoration and Library mode focus restoration natively, so the former `Restore Source Selection` and `Library Mode Focus Fix` patches were removed rather than duplicating upstream behavior.
+
+`Local Downloads` resolves Nuvio's subtitle-fetch worker structurally for each supported APK architecture. This allows completed movie and episode downloads to locate Nuvio's current subtitle repository and save addon subtitles matching the configured primary and secondary languages, without relying on one architecture-specific obfuscated class name.
+
+The Morphe settings title remains **Morphe** in every locale. Settings labels and descriptions support English, Spanish, Italian, German, French, Portuguese (including Brazilian locale selection), Japanese, Korean, Simplified Chinese and Traditional Chinese. Each optional patch owns its translation catalog; unlisted languages fall back to English. This covers the Morphe settings surfaces, not every diagnostic message or the upstream app.
+
+The SDH cleanup patch provides `Off`, `Normalize music symbols only`, `Remove SDH, keep lyrics`, and `Full cleanup`. It removes complete multiline bracketed blocks and infers repeated unknown lyric-boundary tokens within a cue using explicitly documented text rules rather than an AI classifier. Read [exact SDH removal behavior and destructive limitations](docs/SDH_REMOVAL.md) before reporting a missed annotation.
+
+## Install in Morphe Manager
+
+1. Download and install [Morphe Manager](https://morphe.software/) on your phone or TV.
+2. Add `github.com/liongalahad/liongalahad-nuviotv-morphe-patches` as a GitHub patch source. No GitHub PAT is required because the repository is public.
+3. Enable prerelease patches to receive beta bundles.
+4. Import the official [NuvioTV 0.9.0-beta APK](https://github.com/NuvioMedia/NuvioTV/releases/tag/0.9.0-beta) for the target ABI, or the official universal APK.
+5. Select the patches to apply. `Side-by-side installation` is selected by default and produces package `com.nuvio.morphe` with label `Nuvio Morphe`; deselect it only when replacement-install behavior is intended.
+6. Save the patched APK locally, then sideload and install it on your TV. The default side-by-side output installs beside the official app. A replacement output cannot upgrade the official app in place because the patched APK has a different signature.
+
+Applying any public patch also disables NuvioTV's in-app updater. Automatic update checks and the manual About-page update action are bypassed, their About-page controls are removed, and the patched manifest no longer requests package-install permission. To update a patched installation, patch a newly supported official APK and install the resulting signed build instead.
+
+Deep link: `https://morphe.software/add-source?github=liongalahad/liongalahad-nuviotv-morphe-patches`
+
+## Local workflow
+
+```powershell
+.\scripts\bootstrap.ps1 -InstallMissing
+.\scripts\build.ps1 -Patch sdh-annotations
+.\scripts\patch.ps1 -Patch sdh-annotations
+.\scripts\test.ps1 -Patch sdh-annotations -Device tv
+.\scripts\verify-all.ps1
+```
+
+Every run is isolated under `local/patches/<patch-id>/<timestamp>/`. See [Windows setup](docs/SETUP_WINDOWS.md), [architecture](docs/ARCHITECTURE.md), [exact SDH rules](docs/SDH_REMOVAL.md), [testing](docs/TESTING.md), and [release rules](docs/RELEASING.md).
+
+`testing/patches/<patch-id>/` is the source of truth for each patch's target assets, fingerprints, inspection requirements, acceptance criteria, porting notes, and focused test plan. `patches-list.json` and the table below are regenerated from the built bundle.
+
+## NuvioTV 0.9.0-beta compatibility
+
+All seven patch compartments target the official `0.9.0-beta` universal and ABI-specific APKs. The port updates version-pinned settings resources and native Compose bridges, prevents the Morphe settings page from crashing when its sections are opened, and adapts Local Downloads to the current episode, hero, Continue Watching, and stream-screen contracts.
+
+Local Media and Local Downloads now share generic storage discovery that handles existing and newly added files, refreshes the Library > Storage view, and supports writable removable storage. Completed episodes receive a downloaded badge whose size and outer inset mirror Nuvio's native watched badge on the opposite corner. FAT32-sized downloads can be stored as validated segments and played as one local item.
+
+Validation passed 295 extension tests and 9 patch tests, isolated application across four official APK variants, and combined signature/alignment checks. All seven installed TV emulator profiles were exercised, followed by 30 final-build cold launches. Downloads, local playback, subtitle imports and random continuation received functional checks. See the [0.9.0-beta validation report](testing/VALIDATION_0.9.0-beta.md) for exact coverage, build stages and remaining physical-TV acceptance. Generated APKs and raw evidence remain ignored under `local/`.
+
+## Available patches
 
 <!-- PATCHES_START EXPANDED -->
+> **[v1.0.0-beta.1](https://github.com/liongalahad/liongalahad-nuviotv-morphe-patches/releases/tag/v1.0.0-beta.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;7 patches total
+<details open>
+<summary>📦 NuvioTV&nbsp;&nbsp;•&nbsp;&nbsp;7 patches</summary>
+<br>
 
-<!-- Do not modify this section by hand. The patch list is generated when release.yml creates a new release.
-     
-     If you wish for the patches list to be collapsed, then remove the word 'EXPANDED' from the comment tag above.
+**🎯 Supported versions:**
 
-     If you wish to manually keep this list updated then remove the PATCHES_START and PATCHES_END 
-     comment blocks entirely. -->
+| 0.9.0-beta |
+| :---: |
 
-#### A list of your patches will automatically be shown here after your first patches release is created.
+| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
+|----------|----------------|-----------|
+| [Side-by-side installation](testing/patches/side-by-side-installation/README.md) | Installs the patched app separately as Nuvio Morphe instead of replacing NuvioTV. |  |
+| [Random Episode](testing/patches/random-episode/README.md) | Adds persistent per-show random playback with All or Unwatched episode pools.<br>Original idea and code by [**DeclanSC**](https://github.com/DeclanSC). |  |
+| [Local Media](testing/patches/local-media/README.md) | Adds Library > Storage playback, folder selection, and same-basename sidecar subtitles for local video files. |  |
+| [Local Downloads](testing/patches/local-downloads/README.md) | Downloads selected direct movie and episode sources to local storage for exact local playback. |  |
+| [Remove SDH Annotations](testing/patches/sdh-annotations/README.md) | Adds Settings → Morphe → Subtitles to normalize music symbols and remove SDH annotations from Media3 subtitles. |  |
+| [Mark SDH Subtitles](testing/patches/sdh-marking/README.md) | Marks explicitly labelled SDH tracks and detected English SDH subtitle files. |  |
+| [Allow Importing Subs from Local Storage](testing/patches/local-storage-subtitles/README.md) | Imports device subtitle files into Nuvio's ExoPlayer subtitle menu without rebuilding active playback. |  |
 
-&nbsp;
+</details>
 
-## 🚀 Get started
-
-To start using this template, follow these steps:
-
-1. [Setup](https://github.com/MorpheApp/morphe-documentation/blob/main/docs/morphe-development/README.md) your development environment including adding a GitHub PAT as described [here](https://github.com/MorpheApp/morphe-patcher/blob/main/docs/2_1_setup.md#-prepare-the-environment).
-2. [Create a new repository using this template](https://github.com/new?template_name=morphe-patches-template&template_owner=MorpheApp). Select create a new repository, and **enable 'Include all branches'** 
-3. Enable "Allow GitHub Actions to create and approve pull requests" in your repo Settings > Actions > General > Workflow permissions
-4. Update the [build.gradle.kts](patches/build.gradle.kts) file (Specifically, the 
-   [group of the project](patches/build.gradle.kts#L1), and the [About](patches/build.gradle.kts#L6-L11))
-5. Update the [README.md](README.md) file to be specific of your repo, and update the links in the [issue templates](.github/ISSUE_TEMPLATE).
-6. Choose a name for your patches project. Keep in mind you must use a name that does not 
-   imply authorship by the Morphe open source project. If unsure, then simply name these
-   patches after yourself ("UserXYZ Morphe patches"). See the [NOTICE](NOTICE) for details. 
-7. (Optional): Add `patches-bundle.png` to the project if you want a custom icon to show in
-   Morphe Manager instead of your GitHub profile avatar.
-
-🎉 You are now ready to start creating patches!
-
-## 🧑‍💻 Usage
-
-To develop and release your Patches using this template:
-
-- Do all development work in the `dev` branch.
-- For local development work build your patches using the gradle task `./gradlew buildAndroid` to generate the mpp file found in `patches/build/libs/patches-*.mpp`. Apply your patches locally using Morphe CLI tool like any other patch bundle.
-- Always use [Semantic commit](https://kapeli.com/cheat_sheets/Semantic_Commits.docset/Contents/Resources/Documents/index) messages for commits. To keep it simple use only 3 commit message types: `feat: Added a new feature`, `fix: Some problem now fixed`, `chore: Random change you do not want in the user facing changelog`
-- Commits of `fix:` and `feat:` will automatically generate new pre-releases and `chore:` will not create a new release.
-- Users can apply your dev branch releases by enabling `pre-release` in Morphe Manager patch sources.
-- When your dev branch is ready and you want a stable release, merge dev branch to main (do not squash, and only merge).
-- **Always use semantic release (release.yml)**. Do not manually upload or creating releases by hand because many files must be updated and release.yml handles everything.
-
-## 🤓 Tips
-- See the [patcher documentation](https://github.com/MorpheApp/morphe-patcher/blob/main/docs/1_patcher_intro.md)
-  for more examples of creating patches and fingerprints.
-- Do not manually edit any generated files such as: `patches-list.json`, `patches-bundle.json`, `CHANGELOG.md`.
-  These files will be automatically updated in the release action.
-- Do not force push any semantic release commits or you will break the release. To 'redo' the last release then:
-  - Git drop the last dev/main semantic release commit you want to redo.
-  - Delete the release from the release area of this repo and delete the tag   
-  - Make any other changes you wish to do
-  - Force push dev/main branch
-  - A new replacement release will be created by `release.yml`
-
-
-<!-- The patches end tag is intentionally placed here so the first release will cleanup 
-     this readme of all developer instructions above. -->
 <!-- PATCHES_END -->
 
-#### How to use these patches
+## Branches
 
-Click here to add these patches to Morphe: https://morphe.software/add-source?github=xyz-user/xyz-patches
+- `dev`: ongoing development.
+- `main`: reviewed beta and stable release source. Merge `dev` without squashing. Beta publication is explicit; stable publication still requires physical-TV acceptance.
 
-Or manually add this repository url as a patch source in Morphe: https://github.com/xyz-user/xyz-patches
-
-### 🛠️ Building
-
-To build UserXYZ Patches,
-you can follow the [Morphe documentation](https://github.com/MorpheApp/morphe-documentation).
-
-## 📜 License
-
-UserXYZ Patches are licensed under the [GNU General Public License v3.0](LICENSE)
+License: GPL-3.0 with the template's `NOTICE` terms.

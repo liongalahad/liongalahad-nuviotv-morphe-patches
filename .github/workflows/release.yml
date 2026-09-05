@@ -2,11 +2,12 @@ name: Release
 
 on:
   workflow_dispatch:
-  push:
 
 jobs:
   release:
     name: Release
+    # Main beta releases are explicitly published after review; never auto-promote to stable.
+    if: github.ref == 'refs/heads/dev'
     permissions:
       contents: write
       packages: write
@@ -18,6 +19,12 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          fetch-tags: true
+
+      - name: Refresh release tags
+        run: |
+          git fetch --force --tags origin
+          git fetch --force origin '+refs/notes/*:refs/notes/*'
 
       - name: Setup Java
         uses: actions/setup-java@v5
@@ -31,6 +38,13 @@ jobs:
           node-version: 'lts/*'
           cache: 'npm'
 
+      - name: Configure Morphe package credentials
+        env:
+          GPR_KEY: ${{ secrets.MORPHE_PACKAGES_TOKEN || github.token }}
+        run: |
+          mkdir -p "$HOME/.gradle"
+          printf 'gpr.user=%s\ngpr.key=%s\n' "$GITHUB_ACTOR" "$GPR_KEY" > "$HOME/.gradle/gradle.properties"
+
       - name: Install dependencies
         run: npm install
 
@@ -41,6 +55,7 @@ jobs:
         id: release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MORPHE_PACKAGES_TOKEN: ${{ secrets.MORPHE_PACKAGES_TOKEN }}
 
       - name: Attest
         if: steps.release.outputs.new_release_published == 'true'
@@ -55,4 +70,5 @@ jobs:
         if: steps.release.outputs.new_release_published != 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MORPHE_PACKAGES_TOKEN: ${{ secrets.MORPHE_PACKAGES_TOKEN }}
         run: ./gradlew :patches:buildAndroid clean --no-daemon

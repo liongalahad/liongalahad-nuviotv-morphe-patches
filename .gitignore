@@ -98,6 +98,7 @@ fabric.properties
 
 ### Gradle template
 .gradle
+.kotlin/
 **/build/
 !src/**/build/
 
@@ -128,3 +129,12 @@ node_modules/
 # Ignore IDEA files
 .idea/
 local.properties
+
+# Local outputs, credentials, evidence and downloaded tools.
+/local/
+/tools/
+*.apkm
+*.aab
+*.jks
+*.bks
+*.keystore

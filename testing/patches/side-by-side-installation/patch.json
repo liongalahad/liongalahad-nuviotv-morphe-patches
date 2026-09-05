@@ -1,0 +1,62 @@
+{
+  "$schema": "../patch.schema.json",
+  "id": "side-by-side-installation",
+  "name": "Side-by-side installation",
+  "category": "identity",
+  "target": {
+    "application": "NuvioTV",
+    "package": "com.nuvio.tv",
+    "versions": ["0.9.0-beta"],
+    "launchComponent": "com.nuvio.tv/.MainActivity"
+  },
+  "output": {
+    "package": "com.nuvio.morphe",
+    "label": "Nuvio Morphe",
+    "launchComponent": "com.nuvio.morphe/com.nuvio.tv.MainActivity"
+  },
+  "assets": {
+    "universal": {
+      "url": "https://github.com/NuvioMedia/NuvioTV/releases/download/0.9.0-beta/app-full-universal-release.apk",
+      "sha256": "e94d66ef82e3fd7924ed3888d652ee8607f650e2bc3d0c586e8bfd31c0f5d0b5"
+    },
+    "x86_64": {
+      "url": "https://github.com/NuvioMedia/NuvioTV/releases/download/0.9.0-beta/app-full-x86_64-release.apk",
+      "sha256": "e3712cfd0cf4f0a25c1268ca6799abe68248f6ee4a4980974121f00b57f06712"
+    },
+    "arm64-v8a": {
+      "url": "https://github.com/NuvioMedia/NuvioTV/releases/download/0.9.0-beta/app-full-arm64-v8a-release.apk",
+      "sha256": "c4f7222e7e066f57429c54f3c2e1f52823ea666f6a9e60cc318374aa2fbe9004"
+    },
+    "armeabi-v7a": {
+      "url": "https://github.com/NuvioMedia/NuvioTV/releases/download/0.9.0-beta/app-full-armeabi-v7a-release.apk",
+      "sha256": "90e02ddb0793bce7d7c429a4d15cef632a3e6c058755eacce7128515195deec4"
+    }
+  },
+  "dependencies": [],
+  "emulators": {"phone": "Pixel_10", "tv": "Television_4K"},
+  "fingerprints": ["NuvioManifestIdentityStructure"],
+  "inspection": {
+    "provider": "com.nuvio.morphe.fileprovider",
+    "metadata": "Nuvio Morphe",
+    "classes": [],
+    "needles": [],
+    "forbiddenNeedles": []
+  },
+  "focusedTests": [
+    "SideBySideManifestTest",
+    "isolated application on all four official APK assets",
+    "combined application with every current optional patch",
+    "install and launch while official com.nuvio.tv remains installed"
+  ],
+  "acceptance": [
+    "The patch is selected by default in Morphe Manager and can be deselected to retain replacement-install behavior",
+    "The output package is com.nuvio.morphe and the launcher label is Nuvio Morphe",
+    "The official com.nuvio.tv installation remains installed and launchable beside Nuvio Morphe",
+    "Application and component implementation class names remain unchanged",
+    "Every app-defined permission declaration and matching request uses the com.nuvio.morphe prefix",
+    "Every base and patch-added provider authority uses the com.nuvio.morphe prefix and is unique",
+    "A manifest with an unexpected package, permission declaration, or provider authority fails instead of producing a collision-prone APK",
+    "No runtime preference, storage path, feature behavior, or Nuvio account data is migrated from com.nuvio.tv",
+    "No crash, ANR, VerifyError, provider collision, or fatal log occurs during install or launch"
+  ]
+}

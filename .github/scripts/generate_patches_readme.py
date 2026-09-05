@@ -16,6 +16,10 @@ import sys
 import os
 from pathlib import Path
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+
 
 if len(sys.argv) < 3:
     print("Usage: generate_patches_readme.py <owner/repo> <branch> [json] [readme]")
@@ -74,13 +78,42 @@ def anchor(name):
     return re.sub(r"-+", "-", re.sub(r"[^a-z0-9]+", "-", name.lower())).strip("-")
 
 
+APP_PATCH_ORDER = {
+    "Random Episode": 100,
+    "Local Media": 200,
+    "Local Downloads": 210,
+    "Rating Visibility": 300,
+    "Remove SDH Annotations": 400,
+    "Mark SDH Subtitles": 410,
+    "Allow Importing Subs from Local Storage": 420,
+    "Library Mode Focus Fix": 900,
+}
+
+PATCH_CREDITS = {
+    "Random Episode": "Original idea and code by [**DeclanSC**](https://github.com/DeclanSC).",
+}
+
+PATCH_DOCS = {}
+for manifest_path in Path("testing/patches").glob("*/patch.json"):
+    with open(manifest_path, encoding="utf-8-sig") as manifest_file:
+        manifest = json.load(manifest_file)
+    PATCH_DOCS[manifest["name"]] = (manifest_path.parent / "README.md").as_posix()
+
+
 def patches_table(patches):
-    """Render a sorted markdown table of patches with name, description, and options."""
+    """Render patches in the same order as the all-patches Morphe settings screen."""
     rows = [
         "| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |",
         "|----------|----------------|-----------|",
     ]
-    for p in sorted(patches, key=lambda x: x["name"]):
+    for p in sorted(
+        patches,
+        key=lambda x: (
+            0 if x.get("default") else 1,
+            APP_PATCH_ORDER.get(x["name"], 10_000),
+            x["name"],
+        ),
+    ):
         a = anchor(p["name"])
         options = p.get("options") or []
         if options:
@@ -90,7 +123,11 @@ def patches_table(patches):
         else:
             opts_cell = ""
         desc = (p.get("description") or "").replace("\n", "<br>")
-        rows.append(f"| [{p['name']}](#{a}) | {desc} | {opts_cell} |")
+        credit = PATCH_CREDITS.get(p["name"])
+        if credit:
+            desc = f"{desc}<br>{credit}"
+        docs = PATCH_DOCS.get(p["name"], f"#{a}")
+        rows.append(f"| [{p['name']}]({docs}) | {desc} | {opts_cell} |")
     return "\n".join(rows)
 
 
