@@ -33,3 +33,7 @@ The shared settings hub owns the complete Morphe pane skeleton. Individual patch
 The Media3 hook targets Nuvio's `TextOutput` wrapper structurally. It cleans the list extracted at the start of every `CueGroup` callback and, only when that list changes, rebuilds the incoming group with the original `presentationTimeUs` before either of Nuvio's forwarding branches can run. The legacy list callback is filtered at method entry. Each outgoing group rechecks the current cached preference. Text cues are copied only when changed; timing, positioning, surviving spans, non-text cues, and styling are retained. Empty cleaned cues are suppressed.
 
 MPV/libass is explicitly deferred.
+
+## URI transport dispatch
+
+`shared/playback` contributes a single dependency that wraps the progressive upstream factory with Media3 `DefaultDataSource.Factory`. It handles URI schemes generically, contains no optional-feature knowledge, and leaves HTTP/HTTPS routed to the original factory. This is required because the 0.9 MP4 chunk-session path otherwise bypasses Android file/content transport. Unit coverage verifies file bytes and preserved HTTPS delegation.
